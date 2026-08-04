@@ -11,10 +11,10 @@
 | 実行環境 | Docker Compose（macOS Apple Silicon 対応） |
 | 開発 IDE | PyCharm Professional（Docker インタプリタ） |
 
-> ### ⚠️ 本ドキュメントの実装状況
-> STEP 1〜2（`docker-compose/` と `scripts/`）は実装済みだが、**Docker / ROS 2 が無い
-> 環境で作成したため、実際のビルドと起動は未検証**である。初回実行時に不足パッケージ等が
-> 判明する可能性がある。`ros2_ws/src/` はまだ空で、学習フェーズで中身を作っていく。
+> ### 本ドキュメントの実装状況
+> STEP 1〜5 は実装済み。**イメージのビルドとコンテナ起動は macOS (Apple Silicon) で
+> 実機確認済み**。`scripts/verify_env.sh` による全項目の検証は未実施。
+> `ros2_ws/src/` はまだ空で、学習フェーズで中身を作っていく。
 > 実装状況は「[2.3 準備フェーズのチェックリスト](#23-準備フェーズのチェックリスト)」で管理する。
 
 ---
@@ -152,17 +152,17 @@ style Learn fill:#1a1a1a,stroke:#fff,color:#fff
 
 | STEP | 作業 | 成果物 | 状況 |
 |---|---|---|---|
-| 1 | Docker 環境の構築 | `docker-compose/Dockerfile`, `docker-compose/docker-compose.yml`, `docker-compose/entrypoint.sh`, `.env.example` | ✅ 作成済（**未検証**） |
-| 2 | 動作確認 | `scripts/verify_env.sh`, `scripts/{up,sh,build,down}.sh` | ✅ 作成済（**未検証**） |
+| 1 | Docker 環境の構築 | `docker-compose/Dockerfile`, `docker-compose/docker-compose.yml`, `docker-compose/entrypoint.sh`, `.env.example` | ✅ ビルド・起動を確認済 |
+| 2 | 動作確認 | `scripts/verify_env.sh`, `scripts/{up,sh,build,down}.sh` | ✅ 作成済（`verify_env.sh` の実行結果は未確認） |
 | 3 | GUI 表示方式の決定 | noVNC を既定（`entrypoint.sh` に組込み済）、Foxglove は手動起動 | ✅ |
 | 4 | PyCharm 設定 | 本 README 6章（手順のみ。設定はローカル作業） | ✅ |
 | 5 | ワークスペース初期化 | `ros2_ws/src/`, `.gitignore` 更新 | ✅ |
 
-> **「未検証」の意味:** ファイルは作成済みで構文チェックは通っているが、
-> `docker compose build` を実行できる環境が無かったため、
-> **イメージのビルドとコンテナ起動は一度も試していない**。
-> 初回実行時にパッケージ名の誤り等が出た場合は
-> [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照のうえ修正すること。
+> **確認済みの範囲:** `docker compose build` と `up -d`、`exec ros2 bash` での
+> コンテナ接続までは macOS (Apple Silicon) で動作を確認している。
+> `scripts/verify_env.sh` による C1〜C5 の全項目検証はまだ実施していないため、
+> 個々のツール（turtlesim / RViz2 / Gazebo）の起動可否は未確認である。
+> 問題が出た場合は [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照すること。
 
 ---
 
@@ -314,6 +314,11 @@ source /opt/ros/jazzy/setup.bash
 > 自動化しておくことを強く勧める。
 
 作業を短縮するため、`scripts/` に薄いラッパを置く。
+
+> **⚠️ `scripts/*.sh` はホスト（Mac）側で実行する。**
+> 中身が `docker compose` コマンドであり、コンテナ内には docker CLI が無いため、
+> コンテナの中では動かない（誤実行した場合は案内を出して停止する）。
+> コンテナ内での作業は `ros2` / `colcon` コマンドを直接使う。
 
 ```bash
 ./scripts/up.sh       # コンテナ起動
@@ -767,3 +772,4 @@ CI も ROS 環境なしで回せるようになる。
 |---|---|
 | 2026-08-04 | 初版。学習準備（STEP 1〜5）のセットアップガイドとして作成。学習計画以降は `docs/` へ分離 |
 | 2026-08-04 | STEP 1〜2 を実装（`docker-compose/` `scripts/` `.env.example`）。パスを `docker-compose/docker-compose.yml` に統一。`ROS_LOCALHOST_ONLY` を Jazzy 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE` に修正 |
+| 2026-08-05 | イメージのビルドとコンテナ起動を実機確認。`scripts/*.sh` をコンテナ内で誤実行した際のガードを追加 |
