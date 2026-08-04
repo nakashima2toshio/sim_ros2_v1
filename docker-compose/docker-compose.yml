@@ -1,0 +1,87 @@
+# ROS 2 Jazzy 学習環境（シミュレーションのみ・実機なし）
+#
+# 起動:
+#   docker compose -f docker-compose/docker-compose.yml up -d
+# コンテナに入る:
+#   docker compose -f docker-compose/docker-compose.yml exec ros2 bash
+# GUI:
+#   http://localhost:${NOVNC_PORT:-6080}/vnc.html
+#
+# ⚠️ 設計方針（README 3.4 参照）
+#   1. ROS 2 のノードは 1 コンテナ内に集約する。
+#      コンテナを分けると DDS の探索が macOS の Docker ネットワークで失敗しやすく、
+#      学習用途でノードを分散させる必然性がないため。
+#   2. ワークスペースはホストからマウントし、build/install/log だけ名前付き
+#      ボリュームに逃がす（ホスト共有だと遅く、権限問題も起きる）。
+#   3. ポートは明示公開する。network_mode: host は macOS では機能しない。
+#
+# ⚠️ 他アプリとの名前/ポート衝突対策:
+#   - プロジェクト名を明示（name: sim_ros2_v1）。Compose はディレクトリ名を既定の
+#     プロジェクト名に使うため、別アプリの docker-compose/ と衝突しないよう固定する。
+#   - ホスト側ポートは .env で変更できる（NOVNC_PORT 等）。
+name: sim_ros2_v1
+
+services:
+  ros2:
+    build:
+      context: ..
+      dockerfile: docker-compose/Dockerfile
+    image: sim_ros2_v1:jazzy
+    container_name: sim_ros2_v1_ros2
+    hostname: ros2
+
+    # Gazebo は共有メモリを多く使う。既定の 64MB では起動に失敗することがある。
+    shm_size: "2gb"
+
+    environment:
+      # --- DDS ---------------------------------------------------------------
+      ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-42}"
+      # Jazzy では ROS_LOCALHOST_ONLY は非推奨。後継の ROS_AUTOMATIC_DISCOVERY_RANGE を使う。
+      # LOCALHOST にすると同一ホスト内のノードとだけ通信し、LAN 上の他 PC と混線しない。
+      ROS_AUTOMATIC_DISCOVERY_RANGE: "${ROS_AUTOMATIC_DISCOVERY_RANGE:-LOCALHOST}"
+      RMW_IMPLEMENTATION: "${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
+
+      # --- GUI ---------------------------------------------------------------
+      START_GUI: "${START_GUI:-1}"
+      DISPLAY: "${DISPLAY_NUM:-:1}"
+      SCREEN_SIZE: "${SCREEN_SIZE:-1920x1080x24}"
+      VNC_PORT: "5900"
+      NOVNC_PORT: "6080"
+      # Docker から Mac の GPU は使えないため、ソフトウェアレンダリングを明示する。
+      LIBGL_ALWAYS_SOFTWARE: "1"
+
+      # --- Gazebo ------------------------------------------------------------
+      GZ_SIM_RESOURCE_PATH: "/workspace/ros2_ws/src/sim_gazebo/models"
+      SIM_WORLD: "${SIM_WORLD:-empty}"
+
+      # --- Python ------------------------------------------------------------
+      PYTHONUNBUFFERED: "1"
+
+    ports:
+      - "${NOVNC_PORT:-6080}:6080"      # noVNC（ブラウザで GUI を表示）
+      - "${VNC_PORT:-5900}:5900"        # VNC クライアント用
+      - "${FOXGLOVE_PORT:-8765}:8765"   # foxglove_bridge
+      - "${ROSBRIDGE_PORT:-9090}:9090"  # rosbridge_websocket（S6 の Web UI 用）
+      - "${API_PORT:-8000}:8000"        # FastAPI（S6 で使用）
+      - "${DEBUGPY_PORT:-5678}:5678"    # PyCharm リモートデバッグ
+
+    volumes:
+      # リポジトリ全体をマウントし、ホスト（PyCharm）で編集できるようにする。
+      - ..:/workspace
+      # ビルド成果物はホスト共有しない（速度・権限対策）。
+      - ros2_build:/workspace/ros2_ws/build
+      - ros2_install:/workspace/ros2_ws/install
+      - ros2_log:/workspace/ros2_ws/log
+
+    working_dir: /workspace/ros2_ws
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+    # 作業は exec で行うため、コンテナは常駐させておく。
+    command: ["sleep", "infinity"]
+
+volumes:
+  ros2_build:
+  ros2_install:
+  ros2_log:

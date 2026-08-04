@@ -143,6 +143,7 @@ gz sim -v 4 -r visualize_lidar.sdf
 
 | 領域 | Humble | Jazzy | 備考 |
 |---|---|---|---|
+| **通信範囲の限定** | `ROS_LOCALHOST_ONLY=1` | **`ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST`** | **要注意。** 旧変数は Jazzy では非推奨で、使うと警告が出る。新変数は `OFF` / `LOCALHOST` / `SUBNET` / `SYSTEM_DEFAULT` を取る |
 | Gazebo ブリッジ | `ros-humble-ros-gz` | `ros-jazzy-ros-gz` | Harmonic 対応版 |
 | Nav2 | `ros-humble-navigation2` | `ros-jazzy-navigation2` | 設定パラメータに一部変更あり |
 | SLAM | `ros-humble-slam-toolbox` | `ros-jazzy-slam-toolbox` | 使い方は同等 |

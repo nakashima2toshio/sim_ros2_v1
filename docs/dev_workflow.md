@@ -79,7 +79,7 @@ ROS 2 の作業では**ターミナルを 3〜4 枚開く**のが標準。推奨
 すべて同じコマンドで同一コンテナに入る。
 
 ```bash
-docker compose -f docker/docker-compose.yml exec ros2 bash
+docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 # または
 ./scripts/sh.sh
 ```

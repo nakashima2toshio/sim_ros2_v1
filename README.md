@@ -12,9 +12,9 @@
 | 開発 IDE | PyCharm Professional（Docker インタプリタ） |
 
 > ### ⚠️ 本ドキュメントの実装状況
-> 本リポジトリは構築中である。README に記載する `docker/` 以下のファイルおよび
-> `ros2_ws/` は、**本ドキュメントを設計仕様として、これから実装する対象**である。
-> 現時点で実在するファイルは `main.py` / `pyproject.toml` / 本 README / `docs/` のみ。
+> STEP 1〜2（`docker-compose/` と `scripts/`）は実装済みだが、**Docker / ROS 2 が無い
+> 環境で作成したため、実際のビルドと起動は未検証**である。初回実行時に不足パッケージ等が
+> 判明する可能性がある。`ros2_ws/src/` はまだ空で、学習フェーズで中身を作っていく。
 > 実装状況は「[2.3 準備フェーズのチェックリスト](#23-準備フェーズのチェックリスト)」で管理する。
 
 ---
@@ -152,11 +152,17 @@ style Learn fill:#1a1a1a,stroke:#fff,color:#fff
 
 | STEP | 作業 | 成果物 | 状況 |
 |---|---|---|---|
-| 1 | Docker 環境の構築 | `docker/Dockerfile`, `docker/docker-compose.yml`, `docker/entrypoint.sh` | 🔲 |
-| 2 | 動作確認 | `scripts/verify_env.sh` | 🔲 |
-| 3 | GUI 表示方式の決定 | noVNC 設定、`foxglove_bridge` 起動 launch | 🔲 |
-| 4 | PyCharm 設定 | `docs/pycharm_setup.md`（本 README 6章の補足） | 🔲 |
-| 5 | ワークスペース初期化 | `ros2_ws/src/`, `.gitignore` 更新 | 🔲 |
+| 1 | Docker 環境の構築 | `docker-compose/Dockerfile`, `docker-compose/docker-compose.yml`, `docker-compose/entrypoint.sh`, `.env.example` | ✅ 作成済（**未検証**） |
+| 2 | 動作確認 | `scripts/verify_env.sh`, `scripts/{up,sh,build,down}.sh` | ✅ 作成済（**未検証**） |
+| 3 | GUI 表示方式の決定 | noVNC を既定（`entrypoint.sh` に組込み済）、Foxglove は手動起動 | ✅ |
+| 4 | PyCharm 設定 | 本 README 6章（手順のみ。設定はローカル作業） | ✅ |
+| 5 | ワークスペース初期化 | `ros2_ws/src/`, `.gitignore` 更新 | ✅ |
+
+> **「未検証」の意味:** ファイルは作成済みで構文チェックは通っているが、
+> `docker compose build` を実行できる環境が無かったため、
+> **イメージのビルドとコンテナ起動は一度も試していない**。
+> 初回実行時にパッケージ名の誤り等が出た場合は
+> [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照のうえ修正すること。
 
 ---
 
@@ -192,7 +198,7 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 
 ### 3.3 イメージの構成
 
-`docker/Dockerfile` は公式の ROS 2 ベースイメージから組み立てる。
+`docker-compose/Dockerfile` は公式の ROS 2 ベースイメージから組み立てる。
 
 | 層 | 内容 |
 |---|---|
@@ -201,8 +207,8 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 | シミュレータ | `ros-jazzy-ros-gz`（Gazebo Harmonic 連携。`gz sim` 本体を含む） |
 | 自律走行 | `ros-jazzy-navigation2`, `ros-jazzy-nav2-bringup`, `ros-jazzy-slam-toolbox` |
 | 可視化ブリッジ | `ros-jazzy-foxglove-bridge`（Foxglove 用）, `ros-jazzy-rosbridge-suite`（Web UI 用） |
-| GUI 転送 | `xfce4` 最小構成 + `x11vnc` + `novnc` + `websockify` |
-| 開発補助 | `python3-colcon-common-extensions`, `python3-rosdep`, `ros-jazzy-ros2doctor` |
+| GUI 転送 | `xvfb` + `fluxbox` + `x11vnc` + `novnc` + `websockify` |
+| 開発補助 | `python3-colcon-common-extensions`, `python3-rosdep`, `ros-jazzy-ros2doctor`, `debugpy` |
 
 > **なぜ `ros:jazzy-ros-base` から積み上げるのか。**
 > `-desktop-full` 系のタグは arm64 での提供が不安定な時期があり、
@@ -211,7 +217,7 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 
 ### 3.4 docker compose の設計
 
-`docker/docker-compose.yml` の設計方針は次のとおり。
+`docker-compose/docker-compose.yml` の設計方針は次のとおり。
 
 **方針 1: ROS 2 のノードは 1 コンテナ内に集約する**
 
@@ -234,18 +240,30 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 | 8765 | `foxglove_bridge`（Foxglove Studio 接続用） |
 | 9090 | `rosbridge_websocket`（学習後半の Web UI 用） |
 | 8000 | FastAPI（学習後半・S6 で使用） |
+| 5678 | `debugpy`（PyCharm リモートデバッグ用） |
 
 `network_mode: host` は macOS の Docker Desktop では機能しないため使わない。
 
 **環境変数**
 
+既定値は `docker-compose.yml` に埋め込んであり、変更したい場合は
+`cp .env.example .env` して編集する。
+
 | 変数 | 既定値 | 説明 |
 |---|---|---|
 | `ROS_DOMAIN_ID` | `42` | DDS ドメイン。他マシンと混線する場合に変更 |
-| `ROS_LOCALHOST_ONLY` | `1` | 通信をコンテナ内に限定。学習用途では必須級 |
+| `ROS_AUTOMATIC_DISCOVERY_RANGE` | `LOCALHOST` | 探索範囲。同一ホスト内に限定する |
 | `RMW_IMPLEMENTATION` | `rmw_fastrtps_cpp` | Jazzy の既定 DDS |
 | `GZ_SIM_RESOURCE_PATH` | `/workspace/ros2_ws/src/sim_gazebo/models` | Gazebo のモデル探索パス |
+| `START_GUI` | `1` | `0` にすると noVNC 一式を起動しない |
 | `DISPLAY` | `:1` | コンテナ内 Xvfb のディスプレイ番号 |
+| `LIBGL_ALWAYS_SOFTWARE` | `1` | GPU が使えないためソフトウェアレンダリングを強制 |
+
+> **⚠️ `ROS_LOCALHOST_ONLY` は Jazzy では非推奨。**
+> 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE`（`OFF` / `LOCALHOST` / `SUBNET` /
+> `SYSTEM_DEFAULT`）を使う。Humble 向けの記事には `ROS_LOCALHOST_ONLY=1` と
+> 書かれているが、本環境では `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` に読み替える
+> （[`docs/humble_jazzy_diff.md`](docs/humble_jazzy_diff.md)）。
 
 ### 3.5 ビルドと起動
 
@@ -254,21 +272,21 @@ git clone https://github.com/nakashima2toshio/sim_ros2_v1.git
 cd sim_ros2_v1
 
 # イメージのビルド（初回のみ・20〜40分）
-docker compose -f docker/docker-compose.yml build
+docker compose -f docker-compose/docker-compose.yml build
 
 # 起動（バックグラウンド）
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker-compose/docker-compose.yml up -d
 
 # 状態確認
-docker compose -f docker/docker-compose.yml ps
+docker compose -f docker-compose/docker-compose.yml ps
 ```
 
 停止・破棄は次のとおり。
 
 ```bash
-docker compose -f docker/docker-compose.yml stop    # 停止（データは残る）
-docker compose -f docker/docker-compose.yml down    # コンテナ削除
-docker compose -f docker/docker-compose.yml down -v # ボリュームごと破棄（やり直し）
+docker compose -f docker-compose/docker-compose.yml stop    # 停止（データは残る）
+docker compose -f docker-compose/docker-compose.yml down    # コンテナ削除
+docker compose -f docker-compose/docker-compose.yml down -v # ボリュームごと破棄（やり直し）
 ```
 
 ### 3.6 コンテナへの入り方と、複数ターミナルの扱い
@@ -278,14 +296,14 @@ ROS 2 の学習では**ターミナルを 3〜4 枚同時に開く**場面が頻
 
 ```bash
 # 1枚目
-docker compose -f docker/docker-compose.yml exec ros2 bash
+docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 
 # 2枚目以降も同じコマンドで入れる（同一コンテナ内の別シェル）
-docker compose -f docker/docker-compose.yml exec ros2 bash
+docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 ```
 
-毎回 `source` を打つ手間を省くため、`docker/entrypoint.sh` と `~/.bashrc` で
-次を自動実行するよう構成する。
+毎回 `source` を打つ手間を省くため、`docker-compose/entrypoint.sh` と `~/.bashrc` で
+次を自動実行するよう構成してある（実装済み）。
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -309,7 +327,7 @@ source /opt/ros/jazzy/setup.bash
 ## 4. STEP 2: 動作確認
 
 **この章を全部通ることが、学習開始の合格条件**である（2.1 の C1〜C5）。
-`./scripts/verify_env.sh` で一括実行できるようにするが、初回は手で 1 つずつ確認することを勧める。
+`./scripts/verify_env.sh` で一括実行できるが、初回は手で 1 つずつ確認することを勧める。
 どこで落ちるかを知ること自体が、後のトラブル対応の下地になる。
 
 ### 4.1 ros2doctor による自己診断
@@ -362,7 +380,7 @@ ros2 topic hz /chatter
 ```
 
 > ここで `talker` は動くのに `listener` が何も受け取らない場合、
-> ほぼ確実に DDS / ネットワーク設定の問題である。3.4 の方針 1・`ROS_LOCALHOST_ONLY` を確認する。
+> ほぼ確実に DDS / ネットワーク設定の問題である。3.4 の方針 1・`ROS_AUTOMATIC_DISCOVERY_RANGE` を確認する。
 
 ### 4.4 rqt / rqt_graph（C4）
 
@@ -497,7 +515,7 @@ Docker コンテナから Mac の GPU は使えないため、**Gazebo の物理
 
 | 項目 | 値 |
 |---|---|
-| Configuration files | `docker/docker-compose.yml` |
+| Configuration files | `docker-compose/docker-compose.yml` |
 | Service | `ros2` |
 | Python interpreter path | `/usr/bin/python3` |
 
@@ -647,17 +665,21 @@ bags/
 
 ```
 sim_ros2_v1/
-├── docker/                  # 【STEP 1】実行環境
+├── docker-compose/          # 【STEP 1】実行環境
 │   ├── Dockerfile           #   ROS 2 Jazzy + Gazebo Harmonic + Nav2 + GUI
 │   ├── docker-compose.yml   #   ボリューム・ポート・環境変数
-│   └── entrypoint.sh        #   source の自動化
+│   └── entrypoint.sh        #   GUI 起動と source の自動化
 ├── ros2_ws/                 # 【STEP 5】ROS 2 ワークスペース
-│   └── src/                 #   自作パッケージ（学習の主戦場）
-├── lessons/                 # 学習フェーズの教材（章ごとの課題と手順）
-├── tools/                   # ROS 非依存の Python ツール（rosbag 解析など）
-├── scripts/                 # up / sh / build / down / verify_env
-├── tests/                   # tools/ の pytest（ROS 不要・ホストで実行）
+│   └── src/                 #   自作パッケージ（学習の主戦場・現在は空）
+├── scripts/                 # 【STEP 2】定型操作
+│   ├── up.sh / sh.sh        #   起動 / コンテナに入る
+│   ├── build.sh / down.sh   #   ビルド / 停止
+│   └── verify_env.sh        #   動作確認の一括実行（C1〜C5）
+├── lessons/                 # 学習フェーズの教材（章ごとの課題と手順）※未作成
+├── tools/                   # ROS 非依存の Python ツール（rosbag 解析など）※未作成
+├── tests/                   # tools/ の pytest（ROS 不要・ホストで実行）※未作成
 ├── docs/                    # 設計・学習計画・トラブルシュート
+├── .env.example             # 環境変数のひな形（cp して .env にする）
 ├── pyproject.toml           # ホスト側ツールの依存定義
 └── README.md                # 本ドキュメント（学習準備）
 ```
@@ -666,7 +688,7 @@ sim_ros2_v1/
 
 | ディレクトリ | 責務 | 実行場所 |
 |---|---|---|
-| `docker/` | 環境の再現性を担保する | ホスト |
+| `docker-compose/` | 環境の再現性を担保する | ホスト |
 | `ros2_ws/src/` | ROS 2 のノード・インターフェース・launch・URDF | コンテナ内 |
 | `lessons/` | 学習教材。実装は `ros2_ws/src/` にあり、教材からリンクする | — |
 | `tools/` | rosbag 解析・軌跡計算・レポート生成 | ホスト |
@@ -744,3 +766,4 @@ CI も ROS 環境なしで回せるようになる。
 | 日付 | 内容 |
 |---|---|
 | 2026-08-04 | 初版。学習準備（STEP 1〜5）のセットアップガイドとして作成。学習計画以降は `docs/` へ分離 |
+| 2026-08-04 | STEP 1〜2 を実装（`docker-compose/` `scripts/` `.env.example`）。パスを `docker-compose/docker-compose.yml` に統一。`ROS_LOCALHOST_ONLY` を Jazzy 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE` に修正 |

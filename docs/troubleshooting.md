@@ -168,7 +168,7 @@ self.create_subscription(LaserScan, '/scan', self.cb, qos)
 
 ```bash
 echo $ROS_DOMAIN_ID          # 全ターミナルで同じ値か
-echo $ROS_LOCALHOST_ONLY
+echo $ROS_AUTOMATIC_DISCOVERY_RANGE   # Jazzy ではこちら（ROS_LOCALHOST_ONLY は非推奨）
 echo $RMW_IMPLEMENTATION     # 全ノードで同じ実装か
 ```
 
@@ -179,7 +179,7 @@ echo $RMW_IMPLEMENTATION     # 全ノードで同じ実装か
 | ターミナルごとに `ROS_DOMAIN_ID` が違う | `entrypoint.sh` / `.bashrc` で統一 |
 | RMW 実装が混在している | 全ノードで同じ `RMW_IMPLEMENTATION` を使う |
 | コンテナを分けている | **ROS ノードは 1 コンテナに集約する**（README 3.4 方針1） |
-| Docker のブリッジネットワークでマルチキャストが通らない | `ROS_LOCALHOST_ONLY=1` を設定 |
+| Docker のブリッジネットワークでマルチキャストが通らない | `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` を設定 |
 
 ### 4.3 他人の ROS 2 とノードが混線する
 
@@ -190,8 +190,12 @@ echo $RMW_IMPLEMENTATION     # 全ノードで同じ実装か
 **対処**
 
 ```bash
-export ROS_LOCALHOST_ONLY=1        # 推奨（学習用途では常時これでよい）
+# Jazzy 推奨（学習用途では常時これでよい）
+export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 export ROS_DOMAIN_ID=42            # 他と重複しない値に変更
+
+# ⚠️ Humble 向けの記事にある ROS_LOCALHOST_ONLY=1 は Jazzy では非推奨。
+#    設定しても動くが警告が出る。上の変数に読み替えること。
 ```
 
 ### 4.4 TF の変換が見つからない
