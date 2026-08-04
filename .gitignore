@@ -243,3 +243,15 @@ cython_debug/
 
 logs/
 logs/grace_memory.jsonl
+
+# ROS 2 / colcon
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Gazebo
+.gz/
+*.sdf.bak
+
+# rosbag2
+bags/
