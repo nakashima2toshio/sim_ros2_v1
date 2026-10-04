@@ -744,7 +744,7 @@ CI も ROS 環境なしで回せるようになる。
 
 | ファイル | 内容 |
 |---|---|
-| [`docs/learning_plan.md`](docs/learning_plan.md) | **学習計画** — ステージ構成 S1〜S6、全19章、公式チュートリアル対応表 |
+| [`docs/learning_plan.md`](docs/learning_plan.md) | **学習計画** — 重要技術の評価、演習プログラム 28 本の一覧（項目・順番・難易度）、各演習の説明、公式チュートリアル対応表 |
 | [`docs/ros2_essentials.md`](docs/ros2_essentials.md) | **ROS 2 の要点** — 通信4方式、QoS、TF、Web開発者向け用語対応表 |
 | [`docs/dev_workflow.md`](docs/dev_workflow.md) | **日常の開発ワークフロー** — 編集からビルド・実行・可視化まで、CLI チートシート |
 | [`docs/troubleshooting.md`](docs/troubleshooting.md) | **トラブルシューティング** — 症状別インデックス、Mac 固有、DDS、ビルド |
@@ -773,3 +773,4 @@ CI も ROS 環境なしで回せるようになる。
 | 2026-08-04 | 初版。学習準備（STEP 1〜5）のセットアップガイドとして作成。学習計画以降は `docs/` へ分離 |
 | 2026-08-04 | STEP 1〜2 を実装（`docker-compose/` `scripts/` `.env.example`）。パスを `docker-compose/docker-compose.yml` に統一。`ROS_LOCALHOST_ONLY` を Jazzy 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE` に修正 |
 | 2026-08-05 | イメージのビルドとコンテナ起動を実機確認。`scripts/*.sh` をコンテナ内で誤実行した際のガードを追加 |
+| 2026-10-04 | 学習計画（`docs/learning_plan.md`）を全面改訂。技術評価から組み直した演習 28 本の構成に変更 |
