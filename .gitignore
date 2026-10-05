@@ -239,7 +239,13 @@ cython_debug/
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+#
+#  本リポジトリでは .idea/ 全体を管理対象外にする（2026-10-05）。
+#  PyCharm は開いている間に .idea/ を書き換え続ける（例: モジュール名を pyproject.toml の
+#  "sim-ros2-v1" に揃えて .iml をリネームする）ため、管理していると git reset --hard の
+#  直後にも差分が出て、GitHub と同じ状態に揃えられなかった。
+#  Docker インタプリタなどの IDE 設定は各自の PyCharm で行う（README STEP 4）。
+.idea/
 
 logs/
 logs/grace_memory.jsonl
