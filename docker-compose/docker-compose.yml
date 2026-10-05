@@ -57,13 +57,20 @@ services:
       # --- Python ------------------------------------------------------------
       PYTHONUNBUFFERED: "1"
 
+    # ⚠️ ポート公開の方針
+    #   - すべて 127.0.0.1 に限定する。x11vnc はパスワードなし（-nopw）で動いているため、
+    #     0.0.0.0 で公開すると同じ LAN の誰でも画面を見て操作できてしまう。
+    #   - 今の学習段階で使うものだけを公開する。公開しているポートが多いほど、
+    #     Mac 上の他のアプリと衝突しやすい。
+    #   - VNC（5900）はホストに公開しない。noVNC はコンテナの中で x11vnc に繋ぐので不要。
+    #     さらに 5900 は macOS の「画面共有」が使うため、公開すると起動に失敗する。
     ports:
-      - "${NOVNC_PORT:-6080}:6080"      # noVNC（ブラウザで GUI を表示）
-      - "${VNC_PORT:-5900}:5900"        # VNC クライアント用
-      - "${FOXGLOVE_PORT:-8765}:8765"   # foxglove_bridge
-      - "${ROSBRIDGE_PORT:-9090}:9090"  # rosbridge_websocket（S6 の Web UI 用）
-      - "${API_PORT:-8000}:8000"        # FastAPI（S6 で使用）
-      - "${DEBUGPY_PORT:-5678}:5678"    # PyCharm リモートデバッグ
+      - "127.0.0.1:${NOVNC_PORT:-6080}:6080"      # noVNC（ブラウザで GUI を表示）
+      - "127.0.0.1:${FOXGLOVE_PORT:-8765}:8765"   # foxglove_bridge
+      - "127.0.0.1:${DEBUGPY_PORT:-5678}:5678"    # PyCharm リモートデバッグ
+      # 学習後半（P28 Web 連携）で有効にする。8000 は他の FastAPI 開発サーバと衝突しやすい。
+      # - "127.0.0.1:${ROSBRIDGE_PORT:-9090}:9090"  # rosbridge_websocket
+      # - "127.0.0.1:${API_PORT:-8000}:8000"        # FastAPI
 
     volumes:
       # リポジトリ全体をマウントし、ホスト（PyCharm）で編集できるようにする。

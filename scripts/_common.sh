@@ -33,5 +33,13 @@ fi
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="${REPO_ROOT}/docker-compose/docker-compose.yml"
-COMPOSE=(docker compose -f "${COMPOSE_FILE}")
+ENV_FILE="${REPO_ROOT}/.env"
 SERVICE="ros2"
+IMAGE="sim_ros2_v1:jazzy"   # docker-compose.yml の image: と揃える
+
+# Compose が既定で .env を探すのは compose ファイルの置き場（docker-compose/）であり、
+# リポジトリ直下の .env は読まれない。直下に置いた .env を確実に効かせるため明示する。
+COMPOSE=(docker compose -f "${COMPOSE_FILE}")
+if [ -f "${ENV_FILE}" ]; then
+    COMPOSE+=(--env-file "${ENV_FILE}")
+fi
