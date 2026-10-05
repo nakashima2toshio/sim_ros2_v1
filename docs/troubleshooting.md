@@ -33,6 +33,9 @@ ROS 2 学習中に高頻度で遭遇する問題と、その切り分け手順�
 | `Lookup would require extrapolation into the past` | TF の時刻ずれ | [4.4](#44-tf-の変換が見つからない) |
 | PyCharm で `rclpy` が赤線になる | インタプリタパス未設定 | [3.3](#33-pycharm-で-rclpy-が解決されない) |
 | `./scripts/sh.sh: No such file or directory` | コンテナ内で実行している | [5.5](#55-scripts-のスクリプトが見つからない) |
+| `zsh: command not found: ros2` | Mac（ホスト）側で実行している | [5.6](#56-ros2-コマンドが見つからない) |
+| `ports are not available` / `address already in use` | ホスト側のポートを他のアプリが使っている | [7.4](#74-起動時にポートが使えない) |
+| `pull access denied for sim_ros2_v1` | イメージ未作成のまま `up` した（実害なし） | [7.5](#75-pull-access-denied-と表示される) |
 
 ---
 
@@ -322,6 +325,33 @@ cd ~/sim_ros2_v1
 コンテナ内では `ros2` / `colcon` コマンドを直接使う。
 `_common.sh` にガードを入れてあるため、誤実行した場合は案内を表示して停止する。
 
+### 5.6 ros2 コマンドが見つからない
+
+**症状**
+
+```
+zsh: command not found: ros2
+```
+
+**原因:** Mac（ホスト）のターミナルで実行している。ROS 2 は**コンテナの中にだけ**
+入っており、Mac には入っていない（README 3.1）。5.5 の逆のパターンである。
+
+**見分け方:** プロンプトを見る。
+
+| プロンプト | 今いる場所 | 使えるもの |
+|---|---|---|
+| `nakashima_toshio@Mac sim_ros2_v1 %` | Mac | `./scripts/*.sh`、`git`、`docker` |
+| `root@ros2:/workspace/ros2_ws#` | コンテナ | `ros2`、`colcon`、`gz` |
+
+**対処**
+
+```bash
+# Mac で
+./scripts/up.sh      # コンテナが止まっていれば起動
+./scripts/sh.sh      # コンテナに入る → プロンプトが root@ros2 に変わる
+ros2 doctor          # ここで初めて使える
+```
+
 ---
 
 ## 6. Gazebo
@@ -432,6 +462,60 @@ Xvfb :1 -screen 0 1920x1080x24
 | トピックが実際に流れているか | `ros2 topic hz <topic>` |
 | Fixed frame が正しいか | Foxglove の 3D パネル設定で `map` や `base_link` を指定 |
 
+### 7.4 起動時にポートが使えない
+
+**症状**
+
+```
+Error response from daemon: ports are not available:
+exposing port TCP 0.0.0.0:5900 -> 127.0.0.1:0: listen tcp 0.0.0.0:5900: bind: address already in use
+```
+
+**原因:** コンテナが公開しようとしたホスト側のポートを、Mac 上の別のアプリが使っている。
+
+| ポート | よくある使用元 |
+|---|---|
+| 5900 | macOS の「画面共有」「リモートマネジメント」 |
+| 8000 | 他プロジェクトの FastAPI / uvicorn 開発サーバ |
+| 5678 | 他の debugpy セッション |
+| 6080 | 他の noVNC |
+
+> 2026-10-05 以前の `docker-compose.yml` は 5900 を公開していたため、
+> 画面共有が有効な Mac では必ずこのエラーになった。現在は 5900 を公開していない。
+
+**確認**
+
+```bash
+# Mac で。どのプロセスが使っているかを表示する
+lsof -nP -iTCP:6080 -sTCP:LISTEN
+```
+
+`./scripts/up.sh` は起動前にこの確認を自動で行い、使用中なら止まって知らせる
+（ただし root 権限で動くプロセスは `lsof` に表示されないことがある）。
+
+**対処:** 使用元のアプリを止めるか、`.env` で番号を変える。
+
+```bash
+cp .env.example .env   # 初回のみ
+# .env の NOVNC_PORT=6080 を NOVNC_PORT=6081 などに変更
+./scripts/up.sh        # ブラウザは http://localhost:6081/vnc.html になる
+```
+
+### 7.5 pull access denied と表示される
+
+**症状**
+
+```
+! Image sim_ros2_v1:jazzy pull access denied for sim_ros2_v1, repository does not exist
+```
+
+**原因:** イメージがまだ無い状態で `docker compose up` すると、Compose はまず
+Docker Hub から `sim_ros2_v1:jazzy` を探しに行く。そこには無いので失敗を表示し、
+その後 `build:` の定義に従ってローカルでビルドする。**ビルドが進めば実害はない。**
+
+**対処:** 不要。気になる場合は `./scripts/up.sh` を使う（イメージが無ければ先に
+ビルドするので、この表示が出ない）。
+
 ---
 
 ## 変更履歴
@@ -439,3 +523,4 @@ Xvfb :1 -screen 0 1920x1080x24
 | 日付 | 内容 |
 |---|---|
 | 2026-08-04 | 初版。README からトラブルシューティングを分離して作成 |
+| 2026-10-05 | 5.6（ros2 が見つからない）・7.4（ポート衝突）・7.5（pull access denied）を追加 |

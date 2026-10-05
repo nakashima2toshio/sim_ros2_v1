@@ -231,16 +231,24 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 ただし `build/` `install/` `log/` はホストと共有すると遅く・壊れやすいため、
 名前付きボリュームに逃がす。
 
-**方針 3: ポートは明示公開する**
+**方針 3: ポートは必要なものだけを、この Mac からのみ公開する**
 
-| ポート | 用途 |
-|---|---|
-| 6080 | noVNC（ブラウザで RViz2 / Gazebo GUI を表示） |
-| 5900 | VNC（VNC クライアントを使う場合） |
-| 8765 | `foxglove_bridge`（Foxglove Studio 接続用） |
-| 9090 | `rosbridge_websocket`（学習後半の Web UI 用） |
-| 8000 | FastAPI（学習後半・S6 で使用） |
-| 5678 | `debugpy`（PyCharm リモートデバッグ用） |
+| ポート | 用途 | 公開 |
+|---|---|:-:|
+| 6080 | noVNC（ブラウザで RViz2 / Gazebo GUI を表示） | ✅ |
+| 8765 | `foxglove_bridge`（Foxglove Studio 接続用） | ✅ |
+| 5678 | `debugpy`（PyCharm リモートデバッグ用） | ✅ |
+| 9090 | `rosbridge_websocket`（P28 Web 連携で使用） | 🔲 P28 で有効化 |
+| 8000 | FastAPI（P28 Web 連携で使用） | 🔲 P28 で有効化 |
+| 5900 | VNC（x11vnc。noVNC がコンテナ内で使う） | ❌ 公開しない |
+
+- **すべて `127.0.0.1` に限定して公開する。** x11vnc はパスワードなしで動いているため、
+  `0.0.0.0` で公開すると同じ LAN の誰でも画面を見て操作できてしまう。
+- **5900 はホストに公開しない。** macOS の「画面共有」が 5900 を使っており、公開すると
+  `ports are not available ... 5900: bind: address already in use` で起動に失敗する。
+  noVNC はコンテナの中で x11vnc に繋ぐので、ブラウザで見る分には不要である。
+- **8000 / 9090 は P28 まで公開しない。** とくに 8000 は他の FastAPI 開発サーバと衝突しやすい。
+- 番号を変えたい場合は `.env` に書く（`./scripts/up.sh` が読み込む）。
 
 `network_mode: host` は macOS の Docker Desktop では機能しないため使わない。
 
@@ -774,3 +782,4 @@ CI も ROS 環境なしで回せるようになる。
 | 2026-08-04 | STEP 1〜2 を実装（`docker-compose/` `scripts/` `.env.example`）。パスを `docker-compose/docker-compose.yml` に統一。`ROS_LOCALHOST_ONLY` を Jazzy 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE` に修正 |
 | 2026-08-05 | イメージのビルドとコンテナ起動を実機確認。`scripts/*.sh` をコンテナ内で誤実行した際のガードを追加 |
 | 2026-10-04 | 学習計画（`docs/learning_plan.md`）を全面改訂。技術評価から組み直した演習 28 本の構成に変更 |
+| 2026-10-05 | 起動時のポート衝突（5900）を修正。公開ポートを 127.0.0.1 限定・必要最小限に変更。`up.sh` にポートの事前確認と初回ビルドを追加 |
