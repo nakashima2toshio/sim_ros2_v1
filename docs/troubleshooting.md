@@ -317,8 +317,7 @@ bash: ./scripts/sh.sh: No such file or directory
 **対処**
 
 ```bash
-# ホスト（Mac）側で実行する
-cd ~/sim_ros2_v1
+# ホスト（Mac）側で、リポジトリのフォルダに移動してから実行する
 ./scripts/sh.sh
 ```
 

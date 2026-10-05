@@ -29,8 +29,7 @@ class A,B,C,D default
 ### 1.1 一日の始め方
 
 ```bash
-# ホスト側
-cd ~/sim_ros2_v1
+# ホスト側（リポジトリのフォルダに移動してから）
 ./scripts/up.sh                    # コンテナ起動
 ./scripts/sh.sh                    # コンテナ内 bash
 

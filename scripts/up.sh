@@ -9,7 +9,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/_common.sh"
 env_value() {
     local key="$1" default="$2" value=""
     if [ -f "${ENV_FILE}" ]; then
-        value="$(grep -E "^${key}=" "${ENV_FILE}" | tail -1 | cut -d= -f2- | tr -d '"'"'"' ')"
+        # grep は該当行が無いと終了コード 1 を返す。set -e / pipefail で止まらないよう || true を付ける
+        value="$(grep -E "^${key}=" "${ENV_FILE}" | tail -1 | cut -d= -f2- | tr -d '"'"'"' ' || true)"
     fi
     echo "${value:-$default}"
 }
@@ -26,7 +27,9 @@ if command -v lsof >/dev/null 2>&1 && [ -z "$("${COMPOSE[@]}" ps -q "${SERVICE}"
     busy=0
     for entry in "NOVNC_PORT:${NOVNC_PORT}" "FOXGLOVE_PORT:${FOXGLOVE_PORT}" "DEBUGPY_PORT:${DEBUGPY_PORT}"; do
         key="${entry%%:*}"; port="${entry##*:}"
-        owner="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null | awk 'NR==2 {print $1" (PID "$2")"}')"
+        # lsof は「該当なし（＝ポートが空いている）」のとき終了コード 1 を返す。
+        # set -e / pipefail のままだと、正常な状況でスクリプトが黙って終了してしまうため || true を付ける
+        owner="$(lsof -nP -iTCP:"${port}" -sTCP:LISTEN 2>/dev/null | awk 'NR==2 {print $1" (PID "$2")"}' || true)"
         if [ -n "${owner}" ]; then
             echo "✗ ポート ${port}（${key}）は既に使われています: ${owner}" >&2
             busy=1

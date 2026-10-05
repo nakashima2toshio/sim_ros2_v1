@@ -15,7 +15,7 @@ if [ -f /.dockerenv ] || grep -qa 'docker\|containerd' /proc/1/cgroup 2>/dev/nul
  いまはコンテナの中にいるため実行できません。
 
    ・別のターミナルを開きたい場合
-       → Mac 側で:  cd ~/sim_ros2_v1 && ./scripts/sh.sh
+       → Mac 側で、リポジトリのフォルダに移動してから:  ./scripts/sh.sh
 
    ・コンテナ内では、そのまま ros2 コマンドを使えます
        ros2 doctor
