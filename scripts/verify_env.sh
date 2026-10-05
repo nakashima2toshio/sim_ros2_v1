@@ -32,7 +32,11 @@ run_in_container() {
         exec -T ros2 bash -lc "bash /workspace/scripts/verify_env.sh --in-container"
 }
 
-if [ "${1:-}" != "--in-container" ]; then
+# ホストから実行された場合はコンテナへ委譲する。
+# コンテナ内から直接叩かれた場合（/.dockerenv がある）はそのまま検査を続ける。
+in_container() { [ -f /.dockerenv ] || grep -qa 'docker\|containerd' /proc/1/cgroup 2>/dev/null; }
+
+if [ "${1:-}" != "--in-container" ] && ! in_container; then
     echo "== コンテナ内で動作確認を実行します"
     run_in_container
     exit $?

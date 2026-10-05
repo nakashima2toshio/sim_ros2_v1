@@ -87,6 +87,11 @@ docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 > **すべてのターミナルで `source install/setup.bash` が必要。**
 > `entrypoint.sh` / `.bashrc` で自動化しておくこと（README 3.6）。
 
+> **⚠️ `./scripts/sh.sh` はホスト（Mac）側で実行する。**
+> コンテナ内で叩くと `No such file or directory` になる。
+> スクリプトの実体は `/workspace/scripts/` にあるが、中身は `docker compose`
+> コマンドなので、パスを直してもコンテナ内では動かない。
+
 ---
 
 ## 3. CLI チートシート

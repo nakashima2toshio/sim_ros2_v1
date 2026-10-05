@@ -32,6 +32,7 @@ ROS 2 学習中に高頻度で遭遇する問題と、その切り分け手順�
 | 動きがカクつく / 反応が遅い | **仕様**（CPU 実行） | [3.2](#32-リアルタイムファクタが-10-に届かない) |
 | `Lookup would require extrapolation into the past` | TF の時刻ずれ | [4.4](#44-tf-の変換が見つからない) |
 | PyCharm で `rclpy` が赤線になる | インタプリタパス未設定 | [3.3](#33-pycharm-で-rclpy-が解決されない) |
+| `./scripts/sh.sh: No such file or directory` | コンテナ内で実行している | [5.5](#55-scripts-のスクリプトが見つからない) |
 
 ---
 
@@ -294,6 +295,32 @@ entry_points={
 ```
 
 登録名を変更した場合は `colcon build --packages-select <pkg>` が必要。
+
+### 5.5 scripts のスクリプトが見つからない
+
+**症状**
+
+```
+bash: ./scripts/sh.sh: No such file or directory
+```
+
+**原因:** コンテナ内で実行している。`scripts/*.sh` は**ホスト（Mac）側で実行する**
+ラッパであり、次の 2 点でコンテナ内では動かない。
+
+1. スクリプトの実体は `/workspace/scripts/` にあるが、コンテナの作業ディレクトリは
+   `/workspace/ros2_ws` のため、相対パス `./scripts/...` が届かない
+2. 中身が `docker compose` コマンドで、コンテナ内に docker CLI が無い
+
+**対処**
+
+```bash
+# ホスト（Mac）側で実行する
+cd ~/sim_ros2_v1
+./scripts/sh.sh
+```
+
+コンテナ内では `ros2` / `colcon` コマンドを直接使う。
+`_common.sh` にガードを入れてあるため、誤実行した場合は案内を表示して停止する。
 
 ---
 
