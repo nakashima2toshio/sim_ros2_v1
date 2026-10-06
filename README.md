@@ -12,10 +12,12 @@
 | 開発 IDE | PyCharm Professional（Docker インタプリタ） |
 
 > ### 本ドキュメントの実装状況
-> STEP 1〜5 は実装済み。**イメージのビルドとコンテナ起動は macOS (Apple Silicon) で
-> 実機確認済み**。`scripts/verify_env.sh` による全項目の検証は未実施。
+> STEP 1〜5 の手順とファイルは作成済み。macOS (Apple Silicon) の実機では、
+> **イメージのビルド・コンテナ起動・`ros2 doctor`（C1）まで確認済み**。
+> GUI 表示（C2 以降）は確認中である。
 > `ros2_ws/src/` はまだ空で、学習フェーズで中身を作っていく。
-> 実装状況は「[2.3 準備フェーズのチェックリスト](#23-準備フェーズのチェックリスト)」で管理する。
+> 確認状況は「[2.3 準備フェーズのチェックリスト](#23-準備フェーズのチェックリスト)」と
+> 「[4.7 チェックリスト](#47-チェックリスト)」で管理する。
 
 ---
 
@@ -158,10 +160,9 @@ style Learn fill:#1a1a1a,stroke:#fff,color:#fff
 | 4 | PyCharm 設定 | 本 README 6章（手順のみ。設定はローカル作業） | ✅ |
 | 5 | ワークスペース初期化 | `ros2_ws/src/`, `.gitignore` 更新 | ✅ |
 
-> **確認済みの範囲:** `docker compose build` と `up -d`、`exec ros2 bash` での
-> コンテナ接続までは macOS (Apple Silicon) で動作を確認している。
-> `scripts/verify_env.sh` による C1〜C5 の全項目検証はまだ実施していないため、
-> 個々のツール（turtlesim / RViz2 / Gazebo）の起動可否は未確認である。
+> **確認済みの範囲（macOS / Apple Silicon の実機）:** イメージのビルド、`./scripts/up.sh` による
+> コンテナ起動、`./scripts/sh.sh` によるコンテナ接続、`ros2 doctor`（C1）まで。
+> GUI（turtlesim / RViz2 / Gazebo）の表示は未確認である。
 > 問題が出た場合は [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照すること。
 
 ---
@@ -275,40 +276,73 @@ Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB �
 
 ### 3.5 ビルドと起動
 
+**起動は `./scripts/up.sh` で行う。** Mac のターミナルで、リポジトリのフォルダから実行する。
+
 ```bash
 git clone https://github.com/nakashima2toshio/sim_ros2_v1.git
 cd sim_ros2_v1
 
-# イメージのビルド（初回のみ・20〜40分）
-docker compose -f docker-compose/docker-compose.yml build
-
-# 起動（バックグラウンド）
-docker compose -f docker-compose/docker-compose.yml up -d
-
-# 状態確認
-docker compose -f docker-compose/docker-compose.yml ps
+./scripts/up.sh
 ```
+
+`up.sh` は次の 3 つを順に行う。
+
+| 順 | 処理 | 理由 |
+|:-:|---|---|
+| 1 | 公開するポート（6080 / 8765 / 5678）が空いているか確かめる | 使用中なら、使っているアプリと対処を表示して止まる（docs/troubleshooting.md 7.4） |
+| 2 | イメージが無ければビルドする（初回のみ・20〜40 分） | そのまま `up` すると Docker Hub に取りに行き、紛らわしい `pull access denied` が出る |
+| 3 | コンテナを起動する | リポジトリ直下の `.env` があれば、その設定で起動する |
+
+成功すると、最後に次のように表示される。
+
+```
+NAME               IMAGE               ...   STATUS          PORTS
+sim_ros2_v1_ros2   sim_ros2_v1:jazzy   ...   Up ...          127.0.0.1:5678->5678/tcp, 127.0.0.1:6080->6080/tcp, 127.0.0.1:8765->8765/tcp
+
+GUI (noVNC): http://localhost:6080/vnc.html
+コンテナに入る: ./scripts/sh.sh
+```
+
+Docker Desktop の Containers 画面にも `sim_ros2_v1` が表示される
+（他のプロジェクトのコンテナと並んで表示されるので、名前で見分ける）。
 
 停止・破棄は次のとおり。
 
 ```bash
-docker compose -f docker-compose/docker-compose.yml stop    # 停止（データは残る）
-docker compose -f docker-compose/docker-compose.yml down    # コンテナ削除
-docker compose -f docker-compose/docker-compose.yml down -v # ボリュームごと破棄（やり直し）
+./scripts/down.sh       # 停止してコンテナを削除（イメージとビルド成果物のボリュームは残る）
+./scripts/down.sh -v    # ボリュームごと破棄（やり直したいとき）
 ```
+
+> `docker compose` を直接使うこともできるが、その場合はリポジトリ直下の `.env` が
+> 読まれない（Compose は `docker-compose/` の中の `.env` を探す）。
+> `.env` を使うなら `--env-file .env` を付けること。
+> ```bash
+> docker compose -f docker-compose/docker-compose.yml --env-file .env up -d
+> ```
 
 ### 3.6 コンテナへの入り方と、複数ターミナルの扱い
 
 ROS 2 の学習では**ターミナルを 3〜4 枚同時に開く**場面が頻繁にある
 （例: シミュレータ / 自作ノード / `ros2 topic echo` / RViz2）。
+どのターミナルも、Mac 側で次を実行してコンテナに入る。
 
 ```bash
-# 1枚目
-docker compose -f docker-compose/docker-compose.yml exec ros2 bash
-
-# 2枚目以降も同じコマンドで入れる（同一コンテナ内の別シェル）
-docker compose -f docker-compose/docker-compose.yml exec ros2 bash
+# Mac のターミナルで、リポジトリのフォルダから
+./scripts/sh.sh
 ```
+
+何枚開いても、すべて同じコンテナの中の別のシェルになる。
+コンテナが起動していないときは「先に `./scripts/up.sh` を実行」と表示して止まる。
+
+**いま Mac にいるのか、コンテナにいるのかは、プロンプトで見分ける。**
+ここを取り違えるのが、最初にいちばんつまずく点である。
+
+| プロンプト | いる場所 | 使えるもの | 使えないもの |
+|---|---|---|---|
+| `nakashima_toshio@Mac sim_ros2_v1 %` | **Mac** | `./scripts/*.sh`、`git`、`docker` | `ros2`（`command not found` になる） |
+| `root@ros2:/workspace/ros2_ws#` | **コンテナ** | `ros2`、`colcon`、`gz`、`rviz2` | `./scripts/*.sh`、`docker` |
+
+コンテナから Mac に戻るには `exit` を打つ。
 
 毎回 `source` を打つ手間を省くため、`docker-compose/entrypoint.sh` と `~/.bashrc` で
 次を自動実行するよう構成してある（実装済み）。
@@ -329,10 +363,11 @@ source /opt/ros/jazzy/setup.bash
 > コンテナ内での作業は `ros2` / `colcon` コマンドを直接使う。
 
 ```bash
-./scripts/up.sh       # コンテナ起動
-./scripts/sh.sh       # コンテナ内 bash に入る
-./scripts/build.sh    # colcon build
-./scripts/down.sh     # 停止
+./scripts/up.sh          # コンテナ起動（ポート確認・初回ビルド込み）
+./scripts/sh.sh          # コンテナ内 bash に入る
+./scripts/build.sh       # コンテナ内で colcon build（引数でパッケージ指定可）
+./scripts/down.sh        # 停止
+./scripts/verify_env.sh  # 動作確認の一括実行（4 章の C1〜C5）
 ```
 
 ---
@@ -350,8 +385,13 @@ ros2 doctor
 ```
 
 環境変数・RMW・ネットワーク・パッケージの整合性を自己診断する。
-`All checks passed` または警告のみであれば合格。エラーが出る場合は
+`All 5 checks passed` と出れば合格。エラーが出る場合は
 [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照。
+
+> `UserWarning: ... has been updated to a new version. local: 3.4.11 < latest: 3.4.12`
+> が大量に出るが、**無視してよい**。イメージのビルド後に ROS 2 側で小さな修正版が
+> 公開されたことを知らせているだけで、動作には影響しない。消したい場合はイメージを
+> 再ビルドする。
 
 ```bash
 ros2 doctor --report     # 詳細レポート（問い合わせ時に添付すると有用）
@@ -361,16 +401,25 @@ ros2 doctor --report     # 詳細レポート（問い合わせ時に添付す�
 
 ROS 2 の "Hello World"。**GUI が出るかの確認も兼ねる**ため、最初に実施する。
 
+**① ブラウザで GUI の画面を開く**
+
+Mac のブラウザで `http://localhost:6080/vnc.html` を開き、「**接続**（Connect）」を押す。
+何も起動していないデスクトップ（黒っぽい画面）が出る。
+
+**② turtlesim を起動する**（どちらもコンテナ内）
+
 ```bash
 # 1枚目
 ros2 run turtlesim turtlesim_node
 
-# 2枚目
+# 2枚目（Mac で ./scripts/sh.sh してから）
 ros2 run turtlesim turtle_teleop_key
 ```
 
-STEP 3 で設定した方法（noVNC ならブラウザで `http://localhost:6080`）で画面を開き、
-矢印キーで亀が動けば合格。
+ブラウザの画面に青い背景と亀が表示され、矢印キーで亀が動けば合格。
+
+> ⚠️ **キー入力を受け取るのは 2 枚目のターミナル**である。ブラウザの亀の画面を
+> クリックしてからキーを押しても亀は動かない。2 枚目のターミナルをクリックしてから押す。
 
 ### 4.3 ノード間通信（C3）
 
@@ -427,15 +476,25 @@ gz sim -v 4 shapes.sdf
 
 3D 画面に図形が表示され、左下の再生ボタンでシミュレーションが進めば合格。
 
-続いて **ROS 2 との橋渡し**を確認する。
+続いて **ROS 2 との橋渡し**を確認する。Gazebo のトピックは、そのままでは ROS 2 側に
+見えない。`ros_gz_bridge` で 1 つずつ橋渡しする必要がある。ここではシミュレーション時刻
+（`/clock`）を橋渡しして確かめる。
 
 ```bash
-# 1枚目: Gazebo（ヘッドレスでも可）
+# 1枚目: Gazebo を起動（-r で再生状態から始める）
 gz sim -v 4 -r visualize_lidar.sdf
 
-# 2枚目: ブリッジ経由で ROS 側にトピックが見えるか
-ros2 topic list
+# 2枚目: /clock を Gazebo → ROS 2 へ橋渡しする
+ros2 run ros_gz_bridge parameter_bridge /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock
+
+# 3枚目: ROS 2 側で受け取れるか確かめる
+ros2 topic list                 # /clock が出る
+ros2 topic echo /clock --once   # sec / nanosec が表示されれば合格
 ```
+
+> 2 枚目を起動する前に `ros2 topic list` を実行すると、`/clock` は出てこない。
+> **ブリッジを起動して初めて見える**ことを確かめておくと、P19 の理解が早くなる。
+> `@` `[` の記法は「ROS 2 の型」と「Gazebo の型」と「向き（`[` は Gazebo → ROS 2）」を表す。
 
 > **⚠️ 注意:** Jazzy が対応する Gazebo は **Harmonic** であり、コマンドは `gz sim` である。
 > Web 上の記事や Humble 世代のチュートリアルには `ign gazebo` や `gazebo`（Classic）と
@@ -446,7 +505,7 @@ ros2 topic list
 
 | # | 確認項目 | 判定 |
 |---|---|---|
-| 1 | `ros2 doctor` が通る | 🔲 |
+| 1 | `ros2 doctor` が通る | ✅ 2026-10-06 実機で確認（`All 5 checks passed`） |
 | 2 | turtlesim が表示され、キー操作で動く | 🔲 |
 | 3 | `talker` / `listener` が疎通する | 🔲 |
 | 4 | `rqt_graph` でノード構成が見える | 🔲 |
@@ -474,8 +533,8 @@ ROS 2 の学習は RViz2・rqt・Gazebo という GUI ツールに大きく依�
 **A（noVNC）を主、B（Foxglove）を副**とする二本立てを推奨する。
 
 ```bash
-# A: ブラウザで開く（コンテナ起動中は常時利用可）
-open http://localhost:6080
+# A: ブラウザで開いて「接続」を押す（コンテナ起動中は常時利用可）
+open http://localhost:6080/vnc.html
 
 # B: Foxglove を使う場合、コンテナ内でブリッジを起動
 ros2 launch foxglove_bridge foxglove_bridge_launch.xml
@@ -534,6 +593,11 @@ Docker コンテナから Mac の GPU は使えないため、**Gazebo の物理
 
 4. インデックス作成が完了するまで待つ（初回は数分）
 
+> **`.idea/`（PyCharm の設定）は Git の管理対象外にしている。** PyCharm は開いている間
+> `.idea/` を書き換え続ける（例: モジュール名を `pyproject.toml` の `sim-ros2-v1` に揃えて
+> `.iml` をリネームする）。管理対象にしていると、それが未コミットの変更になって
+> `git pull` が止まる。インタプリタなどの設定は各自の PyCharm で行う。
+
 ### 6.2 rclpy の補完を効かせる
 
 ROS 2 の Python パッケージは、標準の site-packages ではなく
@@ -576,7 +640,7 @@ debugpy.listen(("0.0.0.0", 5678))
 debugpy.wait_for_client()
 ```
 
-`docker-compose.yml` でポート 5678 を公開しておくこと。
+ポート 5678 は `docker-compose.yml` で公開済み（この Mac からのみ接続できる）。
 
 ### 6.4 ワークスペースのマウント方針
 
@@ -654,21 +718,16 @@ source install/setup.bash                         # ★ ビルド後は必ず実
 
 ### 7.4 .gitignore
 
-ビルド成果物は Git 管理しない。リポジトリの `.gitignore` に次を追加する。
+ビルド成果物や個人の設定は Git 管理しない。リポジトリの `.gitignore` に**設定済み**である。
 
-```gitignore
-# ROS 2 / colcon
-ros2_ws/build/
-ros2_ws/install/
-ros2_ws/log/
-
-# Gazebo
-.gz/
-*.sdf.bak
-
-# rosbag
-bags/
-```
+| 対象 | 除外する理由 |
+|---|---|
+| `ros2_ws/build/` `install/` `log/` | `colcon build` の成果物。いつでも作り直せる |
+| `.gz/` `*.sdf.bak` | Gazebo の作業ファイル |
+| `bags/` | rosbag の記録。容量が大きい |
+| `.idea/` | PyCharm の個人設定。書き換えられ続けるため（6.1 の注記） |
+| `.env` | 各自のポート番号などの設定 |
+| `.venv/` | ホスト側の Python 仮想環境 |
 
 ---
 
@@ -755,7 +814,7 @@ CI も ROS 環境なしで回せるようになる。
 | [`docs/learning_plan.md`](docs/learning_plan.md) | **学習計画** — 重要技術の評価、演習プログラム 28 本の一覧（項目・順番・難易度）、各演習の説明、公式チュートリアル対応表 |
 | [`docs/ros2_essentials.md`](docs/ros2_essentials.md) | **ROS 2 の要点** — 通信4方式、QoS、TF、Web開発者向け用語対応表 |
 | [`docs/dev_workflow.md`](docs/dev_workflow.md) | **日常の開発ワークフロー** — 編集からビルド・実行・可視化まで、CLI チートシート |
-| [`docs/troubleshooting.md`](docs/troubleshooting.md) | **トラブルシューティング** — 症状別インデックス、Mac 固有、DDS、ビルド |
+| [`docs/troubleshooting.md`](docs/troubleshooting.md) | **トラブルシューティング** — 症状別インデックス、Mac 固有（`ros2` が見つからない等）、DDS、ビルド、Gazebo、GUI、ポート衝突 |
 | [`docs/humble_jazzy_diff.md`](docs/humble_jazzy_diff.md) | **Humble ↔ Jazzy 差分早見表** — Humble 向け記事を読むときの読み替え |
 | [`docs/ros2_tutorial_index.md`](docs/ros2_tutorial_index.md) | **公式チュートリアル索引** — 全章の一覧（Python 版の所在つき） |
 
@@ -785,3 +844,4 @@ CI も ROS 環境なしで回せるようになる。
 | 2026-10-05 | 起動時のポート衝突（5900）を修正。公開ポートを 127.0.0.1 限定・必要最小限に変更。`up.sh` にポートの事前確認と初回ビルドを追加 |
 | 2026-10-05 | `.idea/`（PyCharm の設定）を Git の管理対象外にした。PyCharm が書き換え続けるため、GitHub と同じ状態に揃えられなかった |
 | 2026-10-05 | `up.sh` がポートの空いている正常な状況で何も表示せずに終了し、コンテナを起動していなかった不具合を修正。`sh.sh` はコンテナ停止中に案内を出すようにした |
+| 2026-10-06 | 実装に合わせて全体を見直し。起動・接続を `up.sh` / `sh.sh` 中心の手順に変更、Mac とコンテナのプロンプトの見分け方を追加、4.6 の Gazebo 橋渡し手順の誤り（ブリッジを起動していなかった）を修正、noVNC の URL を `/vnc.html` に修正、`ros2 doctor` の実機確認結果を反映 |
