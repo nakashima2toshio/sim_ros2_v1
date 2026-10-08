@@ -91,7 +91,7 @@ source /opt/ros/jazzy/setup.bash     # Jazzy（本プロジェクト）
 ```
 
 PyCharm の Interpreter Paths 設定で間違えやすい箇所
-（[README STEP 4](../README.md#62-rclpy-の補完を効かせる)）。
+（[セットアップガイド STEP 4](setup_guide.md#62-rclpy-の補完を効かせる)）。
 
 ---
 

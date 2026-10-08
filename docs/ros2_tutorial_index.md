@@ -253,7 +253,7 @@ Tutorials
 | P26 | Nav2 を Python から操作 | なし（Nav2 公式の Simple Commander API） |
 | P27 の解析部分 | rosbag の Python 解析 | 記録・再生までは公式にあるが、解析は範囲外 |
 | P28 | Web 連携 | なし |
-| README 全体 | Mac / Docker / GUI / IDE | なし（Ubuntu ネイティブ前提） |
+| [セットアップガイド](setup_guide.md) 全体 | Mac / Docker / GUI / IDE | なし（Ubuntu ネイティブ前提） |
 
 ---
 
