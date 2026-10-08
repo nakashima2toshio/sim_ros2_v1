@@ -747,7 +747,7 @@ sim_ros2_v1/
 │   ├── up.sh / sh.sh        #   起動 / コンテナに入る
 │   ├── build.sh / down.sh   #   ビルド / 停止
 │   └── verify_env.sh        #   動作確認の一括実行（C1〜C5）
-├── lessons/                 # 学習フェーズの教材（章ごとの課題と手順）※未作成
+├── lessons/                 # 演習の手順書（コマンド・期待される結果）※P01 から順に作成中
 ├── tools/                   # ROS 非依存の Python ツール（rosbag 解析など）※未作成
 ├── tests/                   # tools/ の pytest（ROS 不要・ホストで実行）※未作成
 ├── docs/                    # 設計・学習計画・トラブルシュート
@@ -812,6 +812,7 @@ CI も ROS 環境なしで回せるようになる。
 | ファイル | 内容 |
 |---|---|
 | [`docs/learning_plan.md`](docs/learning_plan.md) | **学習計画** — 重要技術の評価、演習プログラム 28 本の一覧（項目・順番・難易度）、各演習の説明、公式チュートリアル対応表 |
+| [`lessons/`](lessons/README.md) | **演習の手順書** — 各演習のコマンド・期待される結果・到達確認の答え・対処（P01 から順に作成中） |
 | [`docs/ros2_essentials.md`](docs/ros2_essentials.md) | **ROS 2 の要点** — 通信4方式、QoS、TF、Web開発者向け用語対応表 |
 | [`docs/dev_workflow.md`](docs/dev_workflow.md) | **日常の開発ワークフロー** — 編集からビルド・実行・可視化まで、CLI チートシート |
 | [`docs/troubleshooting.md`](docs/troubleshooting.md) | **トラブルシューティング** — 症状別インデックス、Mac 固有（`ros2` が見つからない等）、DDS、ビルド、Gazebo、GUI、ポート衝突 |
@@ -845,3 +846,4 @@ CI も ROS 環境なしで回せるようになる。
 | 2026-10-05 | `.idea/`（PyCharm の設定）を Git の管理対象外にした。PyCharm が書き換え続けるため、GitHub と同じ状態に揃えられなかった |
 | 2026-10-05 | `up.sh` がポートの空いている正常な状況で何も表示せずに終了し、コンテナを起動していなかった不具合を修正。`sh.sh` はコンテナ停止中に案内を出すようにした |
 | 2026-10-06 | 実装に合わせて全体を見直し。起動・接続を `up.sh` / `sh.sh` 中心の手順に変更、Mac とコンテナのプロンプトの見分け方を追加、4.6 の Gazebo 橋渡し手順の誤り（ブリッジを起動していなかった）を修正、noVNC の URL を `/vnc.html` に修正、`ros2 doctor` の実機確認結果を反映 |
+| 2026-10-08 | 演習の手順書 `lessons/` を新設し、P01 の手順書を追加 |
