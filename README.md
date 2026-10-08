@@ -15,16 +15,31 @@
 
 このリポジトリのドキュメントは次のとおり。**上から順に読む**ことを想定している。
 
+**すぐに開く（リンク）**
+
+1. [README.md](README.md) — 学習準備（本書）
+2. [docs/learning_plan.md](docs/learning_plan.md) — **学習計画（学習の目次）**
+3. [lessons/README.md](lessons/README.md) — **演習の手順書**の索引（[P01 の手順書](lessons/P01_observe_nodes.md)）
+4. [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) — 公式チュートリアルの索引
+5. [docs/ros2_essentials.md](docs/ros2_essentials.md) — ROS 2 の要点
+6. [docs/dev_workflow.md](docs/dev_workflow.md) — 日常の開発ワークフロー
+7. [docs/troubleshooting.md](docs/troubleshooting.md) — トラブルシューティング
+8. [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) — Humble ↔ Jazzy 差分早見表
+
+**各ドキュメントの概要**
+
 | 順 | ドキュメント | 概要 | いつ読むか |
 |:-:|---|---|---|
-| 1 | **README.md**（本書） | 学習準備。Docker 環境の構築 → 動作確認 → GUI → PyCharm → ワークスペース初期化（STEP 1〜5） | 最初に。環境が動くまで |
-| 2 | [**`docs/learning_plan.md`**](docs/learning_plan.md) | **学習計画（学習の目次）**。ROS 2 の重要技術の評価と、**演習 P01〜P28 の一覧（項目・順番・難易度・目安時間）**、各演習の目的・作るもの・到達確認 | 準備が終わったら。何をどの順で学ぶかを決めるとき |
-| 3 | [**`lessons/`**](lessons/README.md) | **演習の手順書**。各演習で実行するコマンドと**期待される結果**、到達確認の答え、うまくいかないときの対処 | 演習を 1 本ずつ進めるとき（いまは [P01](lessons/P01_observe_nodes.md) まで） |
-| 4 | [**`docs/ros2_tutorial_index.md`**](docs/ros2_tutorial_index.md) | ROS 2 公式チュートリアルの全目次。各章が本リポジトリのどの演習に対応するか、Python 版があるか | 公式チュートリアルの該当箇所を探すとき |
-| 5 | [`docs/ros2_essentials.md`](docs/ros2_essentials.md) | ROS 2 の要点。通信 4 方式の使い分け・QoS・TF・実行モデル、Web 開発者向けの用語対応表 | 概念で迷ったとき |
-| 6 | [`docs/dev_workflow.md`](docs/dev_workflow.md) | 日常の開発ワークフロー。編集 → ビルド → 実行 → 観察の流れと、CLI チートシート | 毎日の作業で |
-| 7 | [`docs/troubleshooting.md`](docs/troubleshooting.md) | トラブルシューティング。症状から原因と対処を引ける | 動かないとき |
-| 8 | [`docs/humble_jazzy_diff.md`](docs/humble_jazzy_diff.md) | Humble ↔ Jazzy の差分早見表。Humble 向けの記事を本環境（Jazzy）で読み替えるための表 | ネット記事や書籍を参考にするとき |
+| 1 | [README.md](README.md) | 学習準備。Docker 環境の構築 → 動作確認 → GUI → PyCharm → ワークスペース初期化（STEP 1〜5） | 最初に。環境が動くまで |
+| 2 | [docs/learning_plan.md](docs/learning_plan.md) | **学習計画（学習の目次）**。ROS 2 の重要技術の評価と、**演習 P01〜P28 の一覧（項目・順番・難易度・目安時間）**、各演習の目的・作るもの・到達確認 | 準備が終わったら。何をどの順で学ぶかを決めるとき |
+| 3 | [lessons/README.md](lessons/README.md) | **演習の手順書**。各演習で実行するコマンドと**期待される結果**、到達確認の答え、うまくいかないときの対処 | 演習を 1 本ずつ進めるとき（いまは [P01](lessons/P01_observe_nodes.md) まで） |
+| 4 | [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) | ROS 2 公式チュートリアルの全目次。各章が本リポジトリのどの演習に対応するか、Python 版があるか | 公式チュートリアルの該当箇所を探すとき |
+| 5 | [docs/ros2_essentials.md](docs/ros2_essentials.md) | ROS 2 の要点。通信 4 方式の使い分け・QoS・TF・実行モデル、Web 開発者向けの用語対応表 | 概念で迷ったとき |
+| 6 | [docs/dev_workflow.md](docs/dev_workflow.md) | 日常の開発ワークフロー。編集 → ビルド → 実行 → 観察の流れと、CLI チートシート | 毎日の作業で |
+| 7 | [docs/troubleshooting.md](docs/troubleshooting.md) | トラブルシューティング。症状から原因と対処を引ける | 動かないとき |
+| 8 | [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) | Humble ↔ Jazzy の差分早見表。Humble 向けの記事を本環境（Jazzy）で読み替えるための表 | ネット記事や書籍を参考にするとき |
+
+**読む流れ**（図の中はクリックできない。開くときは上のリンクを使う）
 
 ```mermaid
 flowchart LR
@@ -868,3 +883,4 @@ CI も ROS 環境なしで回せるようになる。
 | 2026-10-06 | 実装に合わせて全体を見直し。起動・接続を `up.sh` / `sh.sh` 中心の手順に変更、Mac とコンテナのプロンプトの見分け方を追加、4.6 の Gazebo 橋渡し手順の誤り（ブリッジを起動していなかった）を修正、noVNC の URL を `/vnc.html` に修正、`ros2 doctor` の実機確認結果を反映 |
 | 2026-10-08 | 演習の手順書 `lessons/` を新設し、P01 の手順書を追加 |
 | 2026-10-08 | 冒頭に「ドキュメント案内」を追加（docs/ と lessons/ の全ドキュメントの概要・読む順番・いつ読むか）。9.1 は冒頭へ誘導する形に変更 |
+| 2026-10-08 | ドキュメント案内のリンクを、どの Markdown ビューアでも確実にリンクになる素の書き方に変更。表の外にリンクの箇条書きを追加し、README.md 自身へのリンクも追加 |
