@@ -1,6 +1,6 @@
 # 日常の開発ワークフロー
 
-学習準備（[README](../README.md) STEP 1〜5）完了後の、**毎日の作業手順とコマンド集**。
+学習準備（[セットアップガイド](setup_guide.md) STEP 1〜5）完了後の、**毎日の作業手順とコマンド集**。
 
 ---
 
@@ -84,7 +84,7 @@ docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 ```
 
 > **すべてのターミナルで `source install/setup.bash` が必要。**
-> `entrypoint.sh` / `.bashrc` で自動化しておくこと（README 3.6）。
+> `entrypoint.sh` / `.bashrc` で自動化しておくこと（セットアップガイド 3.6）。
 
 > **⚠️ `./scripts/sh.sh` はホスト（Mac）側で実行する。**
 > コンテナ内で叩くと `No such file or directory` になる。
@@ -237,7 +237,7 @@ ros2 bag play bags/run01 -l        # ループ再生
 uv run python -m tools.report --bag bags/run01 --out reports/run01
 ```
 
-この分離の理由は [README 8.3](../README.md#83-ros-依存--非依存の分離方針) を参照。
+この分離の理由は [セットアップガイド 8.3](setup_guide.md#83-ros-依存--非依存の分離方針) を参照。
 
 ---
 

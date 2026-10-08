@@ -25,8 +25,8 @@ ROS 2 学習中に高頻度で遭遇する問題と、その切り分け手順�
 | トピックは `list` に出るのに `echo` で何も来ない | **QoS 不一致** | [4.1](#41-qos-不一致) |
 | `talker` は動くが `listener` が受け取らない | DDS / ネットワーク設定 | [4.2](#42-ノード同士が見えない) |
 | `.msg` を変更したのに古い型が使われる | ビルドキャッシュ | [5.2](#52-インターフェース変更が反映されない) |
-| `colcon build` が途中で固まる / OOM | 並列数過多 | [5.3](#53-ビルドが固まるメモリ不足) |
-| Gazebo が真っ黒 / 起動しない | GPU 非対応 / GUI 設定 | [6.1](#61-gazebo-が真っ黒起動しない) |
+| `colcon build` が途中で固まる / OOM | 並列数過多 | [5.3](#53-ビルドが固まる--メモリ不足) |
+| Gazebo が真っ黒 / 起動しない | GPU 非対応 / GUI 設定 | [6.1](#61-gazebo-が真っ黒--起動しない) |
 | `ign gazebo: command not found` | Humble 世代の記事を見ている | [6.2](#62-ign-gazebo-が見つからない) |
 | RViz2 / rqt のウィンドウが出ない | GUI 表示方式の設定 | [7.1](#71-gui-ウィンドウが表示されない) |
 | 動きがカクつく / 反応が遅い | **仕様**（CPU 実行） | [3.2](#32-リアルタイムファクタが-10-に届かない) |
@@ -79,7 +79,7 @@ ros2 topic hz <topic>
 Apple Silicon では依存解決が非常に困難。
 
 **対処:** ホストへのインストールは試みない。すべて Docker コンテナ内で行う
-（[README STEP 1](../README.md#3-step-1-docker-環境の構築)）。
+（[セットアップガイド STEP 1](setup_guide.md#3-step-1-docker-環境の構築)）。
 
 ### 3.2 リアルタイムファクタが 1.0 に届かない
 
@@ -113,7 +113,7 @@ Docker インタプリタを設定しても、ROS 2 の Python パッケージ�
 /workspace/ros2_ws/install/<パッケージ名>/lib/python3.12/site-packages
 ```
 
-詳細は [README STEP 4](../README.md#6-step-4-開発環境の整備pycharm-professional)。
+詳細は [セットアップガイド STEP 4](setup_guide.md#6-step-4-開発環境の整備pycharm-professional)。
 
 ### 3.4 コンテナのビルドが極端に遅い
 
@@ -182,7 +182,7 @@ echo $RMW_IMPLEMENTATION     # 全ノードで同じ実装か
 |---|---|
 | ターミナルごとに `ROS_DOMAIN_ID` が違う | `entrypoint.sh` / `.bashrc` で統一 |
 | RMW 実装が混在している | 全ノードで同じ `RMW_IMPLEMENTATION` を使う |
-| コンテナを分けている | **ROS ノードは 1 コンテナに集約する**（README 3.4 方針1） |
+| コンテナを分けている | **ROS ノードは 1 コンテナに集約する**（セットアップガイド 3.4 方針1） |
 | Docker のブリッジネットワークでマルチキャストが通らない | `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` を設定 |
 
 ### 4.3 他人の ROS 2 とノードが混線する
@@ -248,7 +248,7 @@ source /opt/ros/jazzy/setup.bash
 source /workspace/ros2_ws/install/setup.bash
 ```
 
-恒久対処として `entrypoint.sh` / `~/.bashrc` に書いておく（README 3.6）。
+恒久対処として `entrypoint.sh` / `~/.bashrc` に書いておく（セットアップガイド 3.6）。
 
 ### 5.2 インターフェース変更が反映されない
 
@@ -333,7 +333,7 @@ zsh: command not found: ros2
 ```
 
 **原因:** Mac（ホスト）のターミナルで実行している。ROS 2 は**コンテナの中にだけ**
-入っており、Mac には入っていない（README 3.1）。5.5 の逆のパターンである。
+入っており、Mac には入っていない（セットアップガイド 3.1）。5.5 の逆のパターンである。
 
 **見分け方:** プロンプトを見る。
 
@@ -442,7 +442,7 @@ xeyes                  # X が生きているかの最小確認
 | X11（XQuartz） | XQuartz の「ネットワーククライアントからの接続を許可」が有効か |
 
 **推奨:** Apple Silicon では X11 転送は使わず、noVNC を主・Foxglove を副とする
-（[README STEP 3](../README.md#5-step-3-gui-をどう見るか)）。
+（[セットアップガイド STEP 3](setup_guide.md#5-step-3-gui-をどう見るか)）。
 
 ### 7.2 noVNC の画面が小さい / 解像度が合わない
 

@@ -1,886 +1,473 @@
-# sim_ros2_v1 — ROS 2 学習環境 セットアップガイド
+# sim_ros2_v1 — シミュレーションで学ぶ ROS 2
 
-**実機を使わず、Mac 上のシミュレーションだけで ROS 2 を習得するための学習環境。**
-本 README は、その**学習を開始できる状態を作るまで**を扱う。
+**実機を使わず、Mac 1 台と Docker のシミュレーションだけで、ROS 2 を基礎から自律移動まで習得する学習プロジェクト。**
+公式チュートリアルに沿って基礎を固め、公式が扱わない Gazebo・SLAM・Nav2・解析・Web 連携までを、
+28 本の演習プログラムを自分で書きながら一本の道筋で学ぶ。
 
 | 項目 | 内容 |
 |---|---|
-| ROS 2 ディストリビューション | **Jazzy Jalisco**（LTS / 2029年5月まで） |
+| ROS 2 | **Jazzy Jalisco**（LTS / 2029 年 5 月まで） |
 | シミュレータ | turtlesim（前半）→ **Gazebo Harmonic**（後半） |
-| 実装言語 | **Python（rclpy）** |
-| 実行環境 | Docker Compose（macOS Apple Silicon 対応） |
-| 開発 IDE | PyCharm Professional（Docker インタプリタ） |
+| 実装言語 | **Python（rclpy）**のみ |
+| 実行環境 | Docker Compose（macOS Apple Silicon で動作確認） |
+| 開発 IDE | PyCharm Professional |
+| 学習量 | 6 ステージ・**演習 28 本**＋発展課題 4 本・目安 約 120 時間 |
+
+---
 
 ## 📚 ドキュメント案内
 
-このリポジトリのドキュメントは次のとおり。**上から順に読む**ことを想定している。
-
 **すぐに開く（リンク）**
 
-1. [README.md](README.md) — 学習準備（本書）
-2. [docs/learning_plan.md](docs/learning_plan.md) — **学習計画（学習の目次）**
-3. [lessons/README.md](lessons/README.md) — **演習の手順書**の索引（[P01 の手順書](lessons/P01_observe_nodes.md)）
-4. [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) — 公式チュートリアルの索引
-5. [docs/ros2_essentials.md](docs/ros2_essentials.md) — ROS 2 の要点
-6. [docs/dev_workflow.md](docs/dev_workflow.md) — 日常の開発ワークフロー
-7. [docs/troubleshooting.md](docs/troubleshooting.md) — トラブルシューティング
-8. [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) — Humble ↔ Jazzy 差分早見表
+1. [README.md](README.md) — プロジェクトの全体像（本書）
+2. [docs/setup_guide.md](docs/setup_guide.md) — **環境構築の手順**（セットアップガイド）
+3. [docs/learning_plan.md](docs/learning_plan.md) — **学習計画**（技術の評価・演習の一覧と詳細）
+4. [lessons/README.md](lessons/README.md) — **演習の手順書**（[P01](lessons/P01_observe_nodes.md)）
+5. [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) — 公式チュートリアルの索引
+6. [docs/ros2_essentials.md](docs/ros2_essentials.md) — ROS 2 の要点
+7. [docs/dev_workflow.md](docs/dev_workflow.md) — 日常の開発ワークフロー
+8. [docs/troubleshooting.md](docs/troubleshooting.md) — トラブルシューティング
+9. [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) — Humble ↔ Jazzy 差分早見表
 
-**各ドキュメントの概要**
+**各ドキュメントの役割**
 
-| 順 | ドキュメント | 概要 | いつ読むか |
+| 順 | ドキュメント | 書いてあること | いつ読むか |
 |:-:|---|---|---|
-| 1 | [README.md](README.md) | 学習準備。Docker 環境の構築 → 動作確認 → GUI → PyCharm → ワークスペース初期化（STEP 1〜5） | 最初に。環境が動くまで |
-| 2 | [docs/learning_plan.md](docs/learning_plan.md) | **学習計画（学習の目次）**。ROS 2 の重要技術の評価と、**演習 P01〜P28 の一覧（項目・順番・難易度・目安時間）**、各演習の目的・作るもの・到達確認 | 準備が終わったら。何をどの順で学ぶかを決めるとき |
-| 3 | [lessons/README.md](lessons/README.md) | **演習の手順書**。各演習で実行するコマンドと**期待される結果**、到達確認の答え、うまくいかないときの対処 | 演習を 1 本ずつ進めるとき（いまは [P01](lessons/P01_observe_nodes.md) まで） |
-| 4 | [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) | ROS 2 公式チュートリアルの全目次。各章が本リポジトリのどの演習に対応するか、Python 版があるか | 公式チュートリアルの該当箇所を探すとき |
-| 5 | [docs/ros2_essentials.md](docs/ros2_essentials.md) | ROS 2 の要点。通信 4 方式の使い分け・QoS・TF・実行モデル、Web 開発者向けの用語対応表 | 概念で迷ったとき |
-| 6 | [docs/dev_workflow.md](docs/dev_workflow.md) | 日常の開発ワークフロー。編集 → ビルド → 実行 → 観察の流れと、CLI チートシート | 毎日の作業で |
-| 7 | [docs/troubleshooting.md](docs/troubleshooting.md) | トラブルシューティング。症状から原因と対処を引ける | 動かないとき |
-| 8 | [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) | Humble ↔ Jazzy の差分早見表。Humble 向けの記事を本環境（Jazzy）で読み替えるための表 | ネット記事や書籍を参考にするとき |
-
-**読む流れ**（図の中はクリックできない。開くときは上のリンクを使う）
-
-```mermaid
-flowchart LR
-    R["README - 学習準備"] --> P["docs/learning_plan.md - 学習の目次"]
-    P --> L["lessons/Pxx - 演習の手順書"]
-    L --> T["docs/ros2_tutorial_index.md - 公式チュートリアル"]
-    L -.->|"迷ったら"| E["docs/ros2_essentials.md"]
-    L -.->|"動かないとき"| X["docs/troubleshooting.md"]
-classDef default fill:#000,stroke:#fff,color:#fff
-class R,P,L,T,E,X default
-```
-
-> ### 本ドキュメントの実装状況
-> STEP 1〜5 の手順とファイルは作成済み。macOS (Apple Silicon) の実機では、
-> **イメージのビルド・コンテナ起動・`ros2 doctor`（C1）まで確認済み**。
-> GUI 表示（C2 以降）は確認中である。
-> `ros2_ws/src/` はまだ空で、学習フェーズで中身を作っていく。
-> 確認状況は「[2.3 準備フェーズのチェックリスト](#23-準備フェーズのチェックリスト)」と
-> 「[4.7 チェックリスト](#47-チェックリスト)」で管理する。
+| 1 | [README.md](README.md) | 目的・目標・学習の目次・進め方・環境の要点・現在の状況 | 最初に |
+| 2 | [docs/setup_guide.md](docs/setup_guide.md) | 環境構築の詳細。Docker → 動作確認 → GUI → PyCharm → ワークスペース（STEP 1〜5） | 環境を作るとき・壊れたとき |
+| 3 | [docs/learning_plan.md](docs/learning_plan.md) | 技術の評価（重要度・頻度・難易度）、**演習 28 本の目的・作るもの・到達確認・つまずきどころ** | 演習に入る前に、その演習の狙いを確かめるとき |
+| 4 | [lessons/](lessons/README.md) | **演習ごとの手順書**。実行するコマンドと**期待される結果**、到達確認の答え、対処 | 演習を実際に進めるとき |
+| 5 | [docs/ros2_tutorial_index.md](docs/ros2_tutorial_index.md) | 公式チュートリアルの全目次と、各演習との対応 | 公式の該当箇所を読むとき |
+| 6 | [docs/ros2_essentials.md](docs/ros2_essentials.md) | 通信 4 方式・QoS・TF・実行モデル、Web 開発者向け用語対応表 | 概念で迷ったとき |
+| 7 | [docs/dev_workflow.md](docs/dev_workflow.md) | 編集 → ビルド → 実行 → 観察の流れ、CLI チートシート | 毎日の作業で |
+| 8 | [docs/troubleshooting.md](docs/troubleshooting.md) | 症状から原因と対処を引ける | 動かないとき |
+| 9 | [docs/humble_jazzy_diff.md](docs/humble_jazzy_diff.md) | Humble 向けの記事を Jazzy で読み替える表 | ネット記事・書籍を参考にするとき |
 
 ---
 
 ## 目次
 
-- [📚 ドキュメント案内](#-ドキュメント案内)（最初に見る）
-
-1. [概要](#1-概要)
-2. [学習準備で作るもの](#2-学習準備で作るもの)
-3. [STEP 1: Docker 環境の構築](#3-step-1-docker-環境の構築)
-4. [STEP 2: 動作確認](#4-step-2-動作確認)
-5. [STEP 3: GUI をどう見るか](#5-step-3-gui-をどう見るか)
-6. [STEP 4: 開発環境の整備（PyCharm Professional）](#6-step-4-開発環境の整備pycharm-professional)
-7. [STEP 5: ワークスペースの初期化](#7-step-5-ワークスペースの初期化)
-8. [リポジトリ構成](#8-リポジトリ構成)
-9. [関連ドキュメント・参考リンク](#9-関連ドキュメント参考リンク)
-10. [変更履歴](#10-変更履歴)
+1. [このプロジェクトについて](#1-このプロジェクトについて)
+2. [学習の目標と成果](#2-学習の目標と成果)
+3. [学習の目次](#3-学習の目次)
+4. [学習の進め方（実施手順）](#4-学習の進め方実施手順)
+5. [学習環境](#5-学習環境)
+6. [リポジトリ構成](#6-リポジトリ構成)
+7. [現在の状況](#7-現在の状況)
+8. [参考リンク](#8-参考リンク)
+9. [変更履歴](#9-変更履歴)
 
 ---
 
-## 1. 概要
+## 1. このプロジェクトについて
 
-### 1.1 プロジェクトの目的
+### 1.1 目的
 
-ROS 2 を**実機なしで**習得する。ロボット本体・センサ・実験スペースを一切用意せず、
-Mac 1 台と Docker だけで、次の範囲を手を動かして学べる状態を作る。
+ROS 2 で**実際の開発に使われている技術を、一通り自分の手で書ける**ようになること。
+ロボット本体・センサ・実験スペースは一切用意しない。すべてをシミュレーションで行う。
 
-- ROS 2 の通信 4 方式（トピック / サービス / アクション / パラメータ）
-- ノード構成と launch による起動管理
-- URDF によるロボット記述と TF（座標変換）
-- Gazebo 上での仮想ロボット・仮想センサの扱い
-- SLAM による地図生成と Nav2 による自律走行
-- rosbag2 による記録・再現・解析
+### 1.2 学習の方針
 
-### 1.2 この README の役割
+| 方針 | 内容 | 理由 |
+|---|---|---|
+| **実機を使わない** | turtlesim と Gazebo のシミュレーションだけで学ぶ | 機材と場所が要らず、壊しても戻せる。同じ条件を何度でも再現できる |
+| **観察してから書く** | 最初のステージはコードを書かず、CLI で ROS 2 の動きを観察する | 書いたものが動かないとき、コードの誤りか概念の誤解かを切り分けられるようにする |
+| **公式チュートリアルに沿う** | 基礎（S1〜S3）は公式チュートリアルの順序をなぞる | 情報が多く、正確。Jazzy でも Humble でも構成はほぼ同じ |
+| **公式が扱わない部分を補う** | Gazebo との統合・SLAM・Nav2・解析・Web 連携（S4〜S6）は独自に用意する | 公式チュートリアルはここで途切れる。実務ではここからが本番 |
+| **重要技術を独立させる** | QoS・名前空間・Executor・ライフサイクル・シミュレーション時間などを、1 本ずつの演習にする | 公式の順序だけでは抜け落ち、後で必ず詰まる技術だから（[学習計画 2.3](docs/learning_plan.md#23-評価で分かったこと)） |
+| **Python に絞る** | rclpy だけを使い、C++ は扱わない | 概念の習得に集中する。概念は C++ と共通なので、後から移りやすい |
+| **段階的にシミュレータを使う** | S3 までは軽い turtlesim、S4 から Gazebo | 概念を学ぶ段階で、重いシミュレータの環境トラブルに足を取られない |
 
-本 README は**学習準備のドキュメント**である。扱う範囲は次の一線まで。
-
-```
-[ 本README の範囲 ]                              [ 学習フェーズ ]
-環境構築 → 動作確認 → GUI → IDE → WS初期化   ｜   S1 … S6（別ドキュメント）
-```
-
-**「STEP 1〜5 を終えた状態」＝「学習を開始できる状態」**と定義する。
-準備完了後に何をどの順で学ぶかは、[`docs/learning_plan.md`](docs/learning_plan.md) に分離した。
-
-この分離には理由がある。ROS 2 学習の脱落要因はほぼ環境構築であり、
-特に macOS では ROS 2 のネイティブ実行が現実的でないため、
-**準備工程を独立した手順書として完成させてから学習に入る**方が確実に進む。
-
-### 1.3 前提知識と対象環境
-
-**前提知識**
+### 1.3 対象者と前提知識
 
 | 分野 | 必要な水準 |
 |---|---|
-| Python | クラス・デコレータ・仮想環境が読み書きできる |
+| Python | クラス・デコレータ・仮想環境が分かる |
 | Docker | `docker compose up` / `exec` の意味が分かる |
-| ターミナル | 複数タブでの作業に抵抗がない |
+| ターミナル | 複数のターミナルを並べて作業できる |
 | ロボティクス | **不要**（本プロジェクトで学ぶ） |
-| C++ | **不要**（本プロジェクトは Python のみ） |
-
-**対象環境**
-
-| 項目 | 想定 | 備考 |
-|---|---|---|
-| マシン | MacBook Air M2 / メモリ 24GB | Apple Silicon 前提 |
-| OS | macOS 14 以降 | Intel Mac / Linux / WSL2 でも動作する想定 |
-| Docker | Docker Desktop 4.30 以降 | `docker compose` v2 |
-| 空きディスク | 20GB 以上 | イメージ約 8GB ＋ ビルド成果物 |
-| IDE | PyCharm Professional | Docker インタプリタ機能を使うため Community 版は不可 |
-| ホスト Python | 3.12 以上 | `tools/`（ROS 非依存）実行用のみ |
-
-> **ホストに ROS 2 をインストールする必要はない。** すべてコンテナ内で完結させる。
-
-### 1.4 公式チュートリアルとの関係
-
-本プロジェクトは公式チュートリアルを**置き換えるものではなく、実行環境と道筋を与えるもの**である。
-
-| 領域 | 本リポジトリ | 公式 |
-|---|---|---|
-| 環境構築（Mac / Docker / GUI / IDE） | ◎ 本 README が担当 | △ Ubuntu 直インストール前提 |
-| ROS 2 の基礎〜中級（S1〜S3） | 進め方の道筋を提示 | ◎ 本文は公式を参照 |
-| Gazebo との統合（S4） | ◎ 独自 | △ Advanced に 1 章のみ、かつ記法が旧世代 |
-| SLAM / Nav2（S5） | ◎ 独自 | ✕ 範囲外（Nav2 は別ドキュメント） |
-| 記録・解析・Web 連携（S6） | ◎ 独自 | △ 断片的 |
-
-対応関係の詳細は [`docs/learning_plan.md`](docs/learning_plan.md)、
-公式チュートリアルの全目次は [`docs/ros2_tutorial_index.md`](docs/ros2_tutorial_index.md) にまとめている。
-
-> **注意:** 公式チュートリアルには Python 版と C++ 版が併記されている章が多い。
-> 本プロジェクトは **Python 版のみを追う**。
+| C++ | **不要** |
 
 ---
 
-## 2. 学習準備で作るもの
+## 2. 学習の目標と成果
 
-### 2.1 完成状態の定義
+### 2.1 最終目標
 
-次の 6 条件をすべて満たしたとき、学習準備は完了とする。
+28 本の演習を終えたとき、次の 3 つができる状態を目指す。
 
-| # | 条件 | 確認方法 |
-|---|---|---|
-| C1 | コンテナが起動し、ROS 2 Jazzy が使える | `ros2 doctor` が致命的エラーを出さない |
-| C2 | turtlesim が画面に表示され、キー操作で動く | STEP 2.2 |
-| C3 | ノード間でメッセージが流れる | `talker` / `listener` の疎通（STEP 2.3） |
-| C4 | RViz2 と rqt が開く | STEP 2.4 / 2.5 |
-| C5 | Gazebo が起動し、ROS 側からトピックが見える | STEP 2.6 |
-| C6 | PyCharm から `rclpy` の補完が効き、デバッグできる | STEP 4 |
+| # | 目標 | 達成するステージ |
+|:-:|---|:-:|
+| **G1** | 通信 4 方式（トピック / サービス / アクション / パラメータ）と QoS を使い分けて、ROS 2 のノードを自分で書ける | S1〜S3 |
+| **G2** | URDF・TF・Gazebo・ros2_control で仮想ロボットを組み立て、センサを読んで動かせる | S3〜S4 |
+| **G3** | SLAM で地図を作り、Nav2 で自律移動させ、その走行を記録・解析・外部から操作できる | S5〜S6 |
 
-### 2.2 準備の全体像
+### 2.2 ステージごとの到達目標と成果物
+
+| S | ステージ | できるようになること（到達目標） | 手元に残るもの（成果物） | 確かめ方 |
+|:-:|---|---|---|---|
+| **S1** | 観察する | ノード・トピック・サービス・アクションの違いを、CLI と図で説明できる | （コードなし）観察の記録 | `rqt_graph` の図を見て、どのノードがどう繋がっているか説明できる |
+| **S2** | rclpy で書く | 通信 4 方式・QoS・名前空間を使ったノードを自分で書ける | `sim_nodes_py`（自作ノード群）、`sim_interfaces`（自作のメッセージ型） | 自作ノードで亀を動かし、QoS の不一致をわざと起こして直せる |
+| **S3** | 実用構成 | 複数ノードを launch で起動し、座標変換とロボットモデルを扱い、テストを書ける | launch 一式、差動二輪ロボットのモデル（URDF）、テスト | RViz2 にロボットが表示され、`colcon test` が通る |
+| **S4** | シミュレーションと制御 | 仮想ロボットを Gazebo で動かし、センサ（LiDAR・カメラ）を読んで制御できる | Gazebo ワールド、障害物回避ノード、画像処理ノード、ros2_control の設定 | 迷路で壁にぶつからずに走り続ける |
+| **S5** | 自律移動 | 地図を作り、ゴールを指定して自律移動させ、Python から巡回を指示できる | 迷路の地図、Nav2 の設定、巡回ノード | 起動するだけで 4 地点を巡回して戻ってくる |
+| **S6** | 記録・解析・連携 | 走行を記録して解析し、ブラウザから操作・監視できる | 解析レポート（軌跡・速度のグラフ）、Web 画面 | ブラウザのボタンで巡回が始まり、現在位置が表示される |
+
+### 2.3 完成時の姿
+
+全ステージを終えると、次のものが手元に揃う。
+
+```mermaid
+flowchart LR
+    subgraph Ws["ros2_ws/src - 自作の ROS 2 パッケージ"]
+        N["sim_nodes_py - ノード群"]
+        I["sim_interfaces - メッセージ型"]
+        D["sim_description - ロボットモデル"]
+        G["sim_gazebo - ワールド"]
+        C["sim_control - 制御設定"]
+        V["sim_navigation - 地図と Nav2"]
+        B["sim_bringup - 起動設定"]
+    end
+    subgraph Host["ホスト側"]
+        T["tools - 走行の解析"]
+        W["Web 画面 - 操作と監視"]
+    end
+    B --> N
+    B --> G
+    G --> D
+    N --> I
+    V --> N
+    N --> T
+    W --> N
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class N,I,D,G,C,V,B,T,W default
+style Ws fill:#1a1a1a,stroke:#fff,color:#fff
+style Host fill:#1a1a1a,stroke:#fff,color:#fff
+```
+
+---
+
+## 3. 学習の目次
+
+### 3.1 ステージ構成
 
 ```mermaid
 flowchart TB
-    subgraph Prep["学習準備（本 README の範囲）"]
-        S1["STEP 1: Docker 環境の構築"]
-        S2["STEP 2: 動作確認"]
-        S3["STEP 3: GUI 表示方式の決定"]
-        S4["STEP 4: PyCharm 設定"]
-        S5["STEP 5: ワークスペース初期化"]
+    S0["S0: 環境構築 - docs/setup_guide.md"]
+    subgraph Base["基礎 - turtlesim で学ぶ"]
+        S1["S1: 観察する - P01-P04"]
+        S2["S2: rclpy で書く - P05-P11"]
+        S3["S3: 実用構成 - P12-P18"]
     end
-    subgraph Learn["学習フェーズ（docs/learning_plan.md）"]
-        L1["S1-S3: ROS 2 の基礎と中級"]
-        L2["S4-S5: Gazebo / SLAM / Nav2"]
-        L3["S6: 記録・解析・Web 連携"]
+    subgraph Sim["シミュレーション - Gazebo で学ぶ"]
+        S4["S4: シミュレーションと制御 - P19-P23"]
+        S5["S5: 自律移動 - P24-P26"]
     end
-    S1 --> S2 --> S3 --> S4 --> S5 --> L1 --> L2 --> L3
+    subgraph App["応用"]
+        S6["S6: 記録・解析・連携 - P27-P28"]
+    end
+    S0 --> S1 --> S2 --> S3 --> S4 --> S5 --> S6
 classDef default fill:#000,stroke:#fff,color:#fff
 classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
-class S1,S2,S3,S4,S5,L1,L2,L3 default
-style Prep fill:#1a1a1a,stroke:#fff,color:#fff
-style Learn fill:#1a1a1a,stroke:#fff,color:#fff
+class S0,S1,S2,S3,S4,S5,S6 default
+style Base fill:#1a1a1a,stroke:#fff,color:#fff
+style Sim fill:#1a1a1a,stroke:#fff,color:#fff
+style App fill:#1a1a1a,stroke:#fff,color:#fff
 ```
 
-### 2.3 準備フェーズのチェックリスト
+| S | ステージ | 演習 | 環境 | 難易度 | 目安 |
+|:-:|---|:-:|---|:-:|:-:|
+| S0 | 環境構築 | — | Docker | — | 1〜2 h |
+| S1 | 観察する | P01〜P04 | turtlesim | ★1 | 9 h |
+| S2 | rclpy で書く | P05〜P11 | turtlesim | ★2〜★3 | 19 h |
+| S3 | 実用構成 | P12〜P18 | turtlesim / RViz2 | ★3〜★4 | 32 h |
+| S4 | シミュレーションと制御 | P19〜P23 | Gazebo | ★2〜★5 | 26 h |
+| S5 | 自律移動 | P24〜P26 | Gazebo | ★3〜★5 | 18 h |
+| S6 | 記録・解析・連携 | P27〜P28 | Gazebo / ホスト | ★3〜★4 | 13 h |
 
-| STEP | 作業 | 成果物 | 状況 |
-|---|---|---|---|
-| 1 | Docker 環境の構築 | `docker-compose/Dockerfile`, `docker-compose/docker-compose.yml`, `docker-compose/entrypoint.sh`, `.env.example` | ✅ ビルド・起動を確認済 |
-| 2 | 動作確認 | `scripts/verify_env.sh`, `scripts/{up,sh,build,down}.sh` | ✅ 作成済（`verify_env.sh` の実行結果は未確認） |
-| 3 | GUI 表示方式の決定 | noVNC を既定（`entrypoint.sh` に組込み済）、Foxglove は手動起動 | ✅ |
-| 4 | PyCharm 設定 | 本 README 6章（手順のみ。設定はローカル作業） | ✅ |
-| 5 | ワークスペース初期化 | `ros2_ws/src/`, `.gitignore` 更新 | ✅ |
+難易度は ★1（コマンドを打って観察するだけ）〜 ★5（数百行の設定とデバッグが中心）の 5 段階。
+定義は [学習計画 2.1](docs/learning_plan.md#21-評価軸) にある。
 
-> **確認済みの範囲（macOS / Apple Silicon の実機）:** イメージのビルド、`./scripts/up.sh` による
-> コンテナ起動、`./scripts/sh.sh` によるコンテナ接続、`ros2 doctor`（C1）まで。
-> GUI（turtlesim / RViz2 / Gazebo）の表示は未確認である。
-> 問題が出た場合は [`docs/troubleshooting.md`](docs/troubleshooting.md) を参照すること。
+### 3.2 演習一覧（全 28 本）
+
+**上から順に進める。** 各演習の目的・作るもの・到達確認は [学習計画 5 章](docs/learning_plan.md#5-各演習の説明)、
+実行手順と期待される結果は「手順書」の列にある。
+
+| 順 | ID | 演習 | ★ | 目安 | 作るもの | 手順書 |
+|:-:|:-:|---|:-:|:-:|---|:-:|
+| 1 | P01 | 環境確認とノードの観察 | 1 | 2h | （コードなし）turtlesim を起動し、ノード構成を観察する | [✅](lessons/P01_observe_nodes.md) |
+| 2 | P02 | トピックとメッセージ型の操作 | 1 | 2h | （コードなし）CLI でトピックを送受信し、型を調べる | 🔲 |
+| 3 | P03 | サービス・パラメータ・アクションの操作 | 1 | 3h | （コードなし）3 方式を CLI で呼び分ける | 🔲 |
+| 4 | P04 | launch・ログ・bag の操作 | 1 | 2h | （コードなし）記録した動きを再生する | 🔲 |
+| 5 | P05 | パッケージの作成とビルド | 2 | 2h | `sim_nodes_py` パッケージ（空のノード） | 🔲 |
+| 6 | P06 | パブリッシャ・サブスクライバ・タイマ | 2 | 3h | 亀を円運動させるノード ＋ 位置を読むノード | 🔲 |
+| 7 | P07 | QoS の実験 | 2 | 3h | QoS の不一致をわざと起こして直すノード一式 | 🔲 |
+| 8 | P08 | サービスのサーバとクライアント | 2 | 3h | 亀を出現させるクライアント ＋ 自作サービス | 🔲 |
+| 9 | P09 | パラメータ | 2 | 2h | 実行中に速度を変えられるノード | 🔲 |
+| 10 | P10 | カスタムインターフェース | 3 | 4h | `sim_interfaces` パッケージ（msg / srv / action） | 🔲 |
+| 11 | P11 | 名前空間・リマップ | 2 | 2h | 2 匹の亀を同じノードで別々に動かす | 🔲 |
+| 12 | P12 | アクションのサーバとクライアント | 3 | 4h | 指定座標へ亀を移動させるアクション | 🔲 |
+| 13 | P13 | Executor とコールバックグループ | 4 | 5h | デッドロックを再現して解消するノード | 🔲 |
+| 14 | P14 | launch ファイル | 3 | 4h | S2 の全ノードを引数つきで一括起動する launch | 🔲 |
+| 15 | P15 | tf2 による座標変換 | 4 | 6h | 亀が亀を追いかけるノード | 🔲 |
+| 16 | P16 | URDF・xacro・RViz2 | 3 | 6h | 差動二輪ロボット（LiDAR・カメラ付き）のモデル | 🔲 |
+| 17 | P17 | ライフサイクルノード | 3 | 3h | configure → activate で配信を始めるノード | 🔲 |
+| 18 | P18 | テスト | 3 | 4h | S2〜S3 のノードの単体テスト ＋ launch テスト | 🔲 |
+| 19 | P19 | Gazebo とブリッジ | 4 | 6h | P16 のロボットを Gazebo に出現させ、ROS から操作する | 🔲 |
+| 20 | P20 | シミュレーション時間 | 2 | 2h | `use_sim_time` の有無で挙動を比較する | 🔲 |
+| 21 | P21 | センサ処理と制御ループ | 3 | 5h | LiDAR で障害物を避けて走るノード | 🔲 |
+| 22 | P22 | カメラ画像処理 | 3 | 5h | 色付きの物体を検出して追うノード | 🔲 |
+| 23 | P23 | ros2_control | 5 | 8h | 差動二輪を `diff_drive_controller` で制御する構成 | 🔲 |
+| 24 | P24 | SLAM | 3 | 4h | 迷路ワールドの地図 | 🔲 |
+| 25 | P25 | Nav2 の起動と設定 | 5 | 10h | 地図上でゴールを指定して自律移動させる構成 | 🔲 |
+| 26 | P26 | Nav2 を Python から操作 | 3 | 4h | 複数地点を巡回するノード | 🔲 |
+| 27 | P27 | rosbag2 の記録と解析 | 3 | 5h | 走行を記録し、軌跡と速度をグラフ化するツール | 🔲 |
+| 28 | P28 | Web 連携 | 4 | 8h | ブラウザからロボットを操作・監視する画面 | 🔲 |
+
+手順書の列: ✅ 作成済み / 🔲 未作成（取り組む演習の少し先まで、順に作っていく）
+
+### 3.3 発展課題（任意）
+
+| ID | 課題 | ★ | 内容 |
+|:-:|---|:-:|---|
+| X1 | Behavior Tree | 4 | Nav2 の振る舞いを定義する BT（XML）を改造する |
+| X2 | 複数ロボット | 5 | 名前空間（P11）× Nav2（P25）で 2 台を同じ地図で動かす |
+| X3 | MoveIt 2 | 5 | アームロボットの軌道計画と把持を体験する |
+| X4 | DDS の調整 | 4 | 通信ミドルウェアの切り替えなどで、通信の仕組みを深掘りする |
 
 ---
 
-## 3. STEP 1: Docker 環境の構築
+## 4. 学習の進め方（実施手順）
 
-### 3.1 なぜ Docker なのか
+### 4.1 全体の流れ
 
-**macOS には ROS 2 の実用的なネイティブ配布が存在しない。**
-公式のバイナリ提供は Ubuntu / Windows が中心で、macOS は「ソースからのビルド（experimental）」扱いである。
-Apple Silicon ではさらに依存関係の解決が難しく、環境構築だけで数日を消費しかねない。
-
-Docker を使うことで次が同時に得られる。
-
-| 利点 | 内容 |
-|---|---|
-| 再現性 | Ubuntu 24.04 + ROS 2 Jazzy の公式環境がそのまま動く |
-| 隔離 | ホストの Python / Homebrew と一切干渉しない |
-| 破棄可能 | 壊したら `docker compose down -v` でやり直せる |
-| 移植性 | 同じ環境を Linux / WSL2 でも再現できる |
-
-**代償**として、GUI 表示に一手間かかる（→ STEP 3）、GPU アクセラレーションが効かない（→ 5.3）。
-
-### 3.2 前提ソフトの確認
-
-```bash
-docker --version          # 24.x 以降
-docker compose version    # v2.x
-python3 --version         # 3.12 以上（ホスト側 tools/ 用）
+```mermaid
+flowchart LR
+    A["1. 環境を作る - setup_guide"] --> B["2. 演習の狙いを読む - learning_plan 5章"]
+    B --> C["3. 手順書に沿って実施 - lessons"]
+    C --> D["4. 到達確認に答える"]
+    D -->|"できた"| E["5. チェックを付けて次へ"]
+    D -->|"できない"| F["troubleshooting / ros2_essentials"]
+    F --> C
+    E --> B
+classDef default fill:#000,stroke:#fff,color:#fff
+class A,B,C,D,E,F default
 ```
 
-Docker Desktop の設定で、**メモリを 8GB 以上、ディスクを 32GB 以上**割り当てておく。
-24GB 機なら 12GB 割り当てが目安（Gazebo + Nav2 を同時に動かすと 6GB 前後を使う）。
+| 段階 | すること | 使うドキュメント |
+|:-:|---|---|
+| 1 | **環境を作る**（最初の 1 回だけ） | [docs/setup_guide.md](docs/setup_guide.md) |
+| 2 | **演習の狙いを読む**。何を作り、何ができたら完了かを先に知る | [docs/learning_plan.md 5 章](docs/learning_plan.md#5-各演習の説明) |
+| 3 | **手順書に沿って実施する**。コマンドを打つたびに「期待される結果」と見比べる | [lessons/](lessons/README.md) |
+| 4 | **到達確認に答える**。答えは手順書の最後にある | 手順書の「到達確認」 |
+| 5 | **チェックを付けて次へ** | [学習計画 9.3 の進捗チェックリスト](docs/learning_plan.md#93-進捗チェックリスト) |
 
-### 3.3 イメージの構成
+### 4.2 1 本の演習の時間配分
 
-`docker-compose/Dockerfile` は公式の ROS 2 ベースイメージから組み立てる。
-
-| 層 | 内容 |
-|---|---|
-| ベース | `ros:jazzy-ros-base`（arm64 対応の公式イメージ） |
-| デスクトップ一式 | `ros-jazzy-desktop`（RViz2 / rqt / turtlesim / demo_nodes_py を含む） |
-| シミュレータ | `ros-jazzy-ros-gz`（Gazebo Harmonic 連携。`gz sim` 本体を含む） |
-| 自律走行 | `ros-jazzy-navigation2`, `ros-jazzy-nav2-bringup`, `ros-jazzy-slam-toolbox` |
-| 可視化ブリッジ | `ros-jazzy-foxglove-bridge`（Foxglove 用）, `ros-jazzy-rosbridge-suite`（Web UI 用） |
-| GUI 転送 | `xvfb` + `fluxbox` + `x11vnc` + `novnc` + `websockify` |
-| 開発補助 | `python3-colcon-common-extensions`, `python3-rosdep`, `ros-jazzy-ros2doctor`, `debugpy` |
-
-> **なぜ `ros:jazzy-ros-base` から積み上げるのか。**
-> `-desktop-full` 系のタグは arm64 での提供が不安定な時期があり、
-> また不要な重量物を抱える。必要なパッケージを明示的に `apt install` する方が、
-> 何が入っているか把握でき、後の切り分けが楽になる。
-
-### 3.4 docker compose の設計
-
-`docker-compose/docker-compose.yml` の設計方針は次のとおり。
-
-**方針 1: ROS 2 のノードは 1 コンテナ内に集約する**
-
-コンテナを分けると DDS のマルチキャスト探索が macOS の Docker ネットワークで失敗しやすい。
-学習用途ではノードを分散させる必然性がないため、**全ノードを 1 コンテナ内で動かす**。
-これにより DDS 起因のトラブルをほぼ回避できる。
-
-**方針 2: ワークスペースはボリュームマウントする**
-
-`ros2_ws/` をホストからマウントし、**ホスト（PyCharm）で編集 → コンテナ内でビルド**する。
-ただし `build/` `install/` `log/` はホストと共有すると遅く・壊れやすいため、
-名前付きボリュームに逃がす。
-
-**方針 3: ポートは必要なものだけを、この Mac からのみ公開する**
-
-| ポート | 用途 | 公開 |
+| 段階 | 内容 | 配分 |
 |---|---|:-:|
-| 6080 | noVNC（ブラウザで RViz2 / Gazebo GUI を表示） | ✅ |
-| 8765 | `foxglove_bridge`（Foxglove Studio 接続用） | ✅ |
-| 5678 | `debugpy`（PyCharm リモートデバッグ用） | ✅ |
-| 9090 | `rosbridge_websocket`（P28 Web 連携で使用） | 🔲 P28 で有効化 |
-| 8000 | FastAPI（P28 Web 連携で使用） | 🔲 P28 で有効化 |
-| 5900 | VNC（x11vnc。noVNC がコンテナ内で使う） | ❌ 公開しない |
+| 読む | 学習計画の該当演習と、対応する公式チュートリアルを読む | 20% |
+| 書く | `ros2_ws/src/` に実装する。**写経ではなく、見ないで書く** | 40% |
+| 観察する | `ros2 topic echo` / `rqt_graph` / `ros2 topic info -v` で、期待どおりに繋がっているかを見る | 30% |
+| 確かめる | 到達確認に答える。できなければ「読む」に戻る | 10% |
 
-- **すべて `127.0.0.1` に限定して公開する。** x11vnc はパスワードなしで動いているため、
-  `0.0.0.0` で公開すると同じ LAN の誰でも画面を見て操作できてしまう。
-- **5900 はホストに公開しない。** macOS の「画面共有」が 5900 を使っており、公開すると
-  `ports are not available ... 5900: bind: address already in use` で起動に失敗する。
-  noVNC はコンテナの中で x11vnc に繋ぐので、ブラウザで見る分には不要である。
-- **8000 / 9090 は P28 まで公開しない。** とくに 8000 は他の FastAPI 開発サーバと衝突しやすい。
-- 番号を変えたい場合は `.env` に書く（`./scripts/up.sh` が読み込む）。
+**「観察する」が最も大事である。** ROS 2 は複数のプログラムが通信しあう仕組みなので、動かないときに
+原因がノード・トピック名・QoS・型・時刻のどこにあるのかを切り分ける力が要る。
 
-`network_mode: host` は macOS の Docker Desktop では機能しないため使わない。
+### 4.3 1 日の作業の流れ
 
-**環境変数**
+```bash
+# --- 始める（Mac のターミナル・リポジトリのフォルダで） ---
+git pull origin master       # 最新の手順書を取り込む
+./scripts/up.sh              # コンテナを起動する
+./scripts/sh.sh              # コンテナに入る（必要な枚数だけ、別ターミナルで繰り返す）
 
-既定値は `docker-compose.yml` に埋め込んであり、変更したい場合は
-`cp .env.example .env` して編集する。
+# --- 作業する（プロンプトが root@ros2: のターミナルで） ---
+#     手順書に沿って ros2 / colcon コマンドを実行する
+#     GUI はブラウザで http://localhost:6080/vnc.html →「接続」
 
-| 変数 | 既定値 | 説明 |
+# --- 終える（Mac のターミナルで） ---
+./scripts/down.sh            # コンテナを停止する（ビルド成果物は残る）
+```
+
+**いまどこにいるかは、プロンプトで見分ける。**
+
+| プロンプト | いる場所 | 使えるもの |
 |---|---|---|
-| `ROS_DOMAIN_ID` | `42` | DDS ドメイン。他マシンと混線する場合に変更 |
-| `ROS_AUTOMATIC_DISCOVERY_RANGE` | `LOCALHOST` | 探索範囲。同一ホスト内に限定する |
-| `RMW_IMPLEMENTATION` | `rmw_fastrtps_cpp` | Jazzy の既定 DDS |
-| `GZ_SIM_RESOURCE_PATH` | `/workspace/ros2_ws/src/sim_gazebo/models` | Gazebo のモデル探索パス |
-| `START_GUI` | `1` | `0` にすると noVNC 一式を起動しない |
-| `DISPLAY` | `:1` | コンテナ内 Xvfb のディスプレイ番号 |
-| `LIBGL_ALWAYS_SOFTWARE` | `1` | GPU が使えないためソフトウェアレンダリングを強制 |
+| `nakashima_toshio@Mac sim_ros2_v1 %` | **Mac** | `./scripts/*.sh`、`git` |
+| `root@ros2:/workspace/ros2_ws#` | **コンテナ** | `ros2`、`colcon`、`gz` |
 
-> **⚠️ `ROS_LOCALHOST_ONLY` は Jazzy では非推奨。**
-> 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE`（`OFF` / `LOCALHOST` / `SUBNET` /
-> `SYSTEM_DEFAULT`）を使う。Humble 向けの記事には `ROS_LOCALHOST_ONLY=1` と
-> 書かれているが、本環境では `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` に読み替える
-> （[`docs/humble_jazzy_diff.md`](docs/humble_jazzy_diff.md)）。
+### 4.4 手順書の読み方
 
-### 3.5 ビルドと起動
+手順書（`lessons/Pxx_*.md`）は、**コマンドと、その直後に期待される結果**を組にして書いている。
 
-**起動は `./scripts/up.sh` で行う。** Mac のターミナルで、リポジトリのフォルダから実行する。
+````
+### 4.1 起動しているノードの一覧
+
+```bash
+ros2 node list          ← 実行するコマンド
+```
+
+**期待される結果:**     ← こう表示されれば正しい
+
+```
+/teleop_turtle
+/turtlesim
+```
+````
+
+**期待される結果と違ったら、そこで止まる。** 先に進まず、手順書の「うまくいかないとき」と
+[docs/troubleshooting.md](docs/troubleshooting.md) を見る。期待される結果は推測ではなく、
+実機またはソースで確かめた値を書いている（どちらで確かめたかは各手順書の変更履歴にある）。
+
+---
+
+## 5. 学習環境
+
+詳細は [docs/setup_guide.md](docs/setup_guide.md) にある。ここでは全体像と最初の起動だけを示す。
+
+### 5.1 構成
+
+```mermaid
+flowchart LR
+    subgraph Mac["Mac（ホスト）"]
+        Br["ブラウザ - noVNC 6080"]
+        Py["PyCharm - コードを編集"]
+        Sc["scripts - up / sh / down"]
+    end
+    subgraph Ctr["Docker コンテナ sim_ros2_v1_ros2"]
+        Ros["ROS 2 Jazzy - ノード群"]
+        Gz["Gazebo Harmonic"]
+        Gui["仮想ディスプレイ - Xvfb + x11vnc"]
+    end
+    Sc --> Ctr
+    Py -->|"ros2_ws をマウント"| Ros
+    Ros --> Gui
+    Gz --> Gui
+    Gui --> Br
+classDef default fill:#000,stroke:#fff,color:#fff
+classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
+class Br,Py,Sc,Ros,Gz,Gui default
+style Mac fill:#1a1a1a,stroke:#fff,color:#fff
+style Ctr fill:#1a1a1a,stroke:#fff,color:#fff
+```
+
+| 要素 | 内容 |
+|---|---|
+| なぜ Docker か | macOS には ROS 2 の実用的な配布が無い。コンテナの中に Ubuntu 24.04 ＋ ROS 2 Jazzy を用意する |
+| GUI の見え方 | コンテナ内の画面（RViz2・Gazebo・turtlesim）を、ブラウザ（noVNC）で見る |
+| コードの置き場所 | Mac の `ros2_ws/src/` をコンテナにマウントする。PyCharm で編集し、コンテナでビルドする |
+| ポート | 6080（noVNC）・8765（Foxglove）・5678（デバッガ）。**この Mac からのみ**接続できる |
+
+### 5.2 前提ソフト
+
+| ソフト | 要件 |
+|---|---|
+| Docker Desktop | 4.30 以降。メモリ 8 GB 以上・ディスク 32 GB 以上を割り当てる |
+| ブラウザ | noVNC が動くもの（Chrome / Safari など） |
+| PyCharm | Professional（Docker インタプリタを使うため） |
+| 空きディスク | 20 GB 以上 |
+
+### 5.3 クイックスタート
+
+Mac のターミナルで実行する。
 
 ```bash
 git clone https://github.com/nakashima2toshio/sim_ros2_v1.git
 cd sim_ros2_v1
-
-./scripts/up.sh
+./scripts/up.sh        # 初回はイメージのビルドに 20〜40 分かかる
 ```
 
-`up.sh` は次の 3 つを順に行う。
-
-| 順 | 処理 | 理由 |
-|:-:|---|---|
-| 1 | 公開するポート（6080 / 8765 / 5678）が空いているか確かめる | 使用中なら、使っているアプリと対処を表示して止まる（docs/troubleshooting.md 7.4） |
-| 2 | イメージが無ければビルドする（初回のみ・20〜40 分） | そのまま `up` すると Docker Hub に取りに行き、紛らわしい `pull access denied` が出る |
-| 3 | コンテナを起動する | リポジトリ直下の `.env` があれば、その設定で起動する |
-
-成功すると、最後に次のように表示される。
+**期待される結果:** 最後に次の 2 行が出る。
 
 ```
-NAME               IMAGE               ...   STATUS          PORTS
-sim_ros2_v1_ros2   sim_ros2_v1:jazzy   ...   Up ...          127.0.0.1:5678->5678/tcp, 127.0.0.1:6080->6080/tcp, 127.0.0.1:8765->8765/tcp
-
 GUI (noVNC): http://localhost:6080/vnc.html
 コンテナに入る: ./scripts/sh.sh
 ```
 
-Docker Desktop の Containers 画面にも `sim_ros2_v1` が表示される
-（他のプロジェクトのコンテナと並んで表示されるので、名前で見分ける）。
-
-停止・破棄は次のとおり。
-
 ```bash
-./scripts/down.sh       # 停止してコンテナを削除（イメージとビルド成果物のボリュームは残る）
-./scripts/down.sh -v    # ボリュームごと破棄（やり直したいとき）
-```
-
-> `docker compose` を直接使うこともできるが、その場合はリポジトリ直下の `.env` が
-> 読まれない（Compose は `docker-compose/` の中の `.env` を探す）。
-> `.env` を使うなら `--env-file .env` を付けること。
-> ```bash
-> docker compose -f docker-compose/docker-compose.yml --env-file .env up -d
-> ```
-
-### 3.6 コンテナへの入り方と、複数ターミナルの扱い
-
-ROS 2 の学習では**ターミナルを 3〜4 枚同時に開く**場面が頻繁にある
-（例: シミュレータ / 自作ノード / `ros2 topic echo` / RViz2）。
-どのターミナルも、Mac 側で次を実行してコンテナに入る。
-
-```bash
-# Mac のターミナルで、リポジトリのフォルダから
-./scripts/sh.sh
-```
-
-何枚開いても、すべて同じコンテナの中の別のシェルになる。
-コンテナが起動していないときは「先に `./scripts/up.sh` を実行」と表示して止まる。
-
-**いま Mac にいるのか、コンテナにいるのかは、プロンプトで見分ける。**
-ここを取り違えるのが、最初にいちばんつまずく点である。
-
-| プロンプト | いる場所 | 使えるもの | 使えないもの |
-|---|---|---|---|
-| `nakashima_toshio@Mac sim_ros2_v1 %` | **Mac** | `./scripts/*.sh`、`git`、`docker` | `ros2`（`command not found` になる） |
-| `root@ros2:/workspace/ros2_ws#` | **コンテナ** | `ros2`、`colcon`、`gz`、`rviz2` | `./scripts/*.sh`、`docker` |
-
-コンテナから Mac に戻るには `exit` を打つ。
-
-毎回 `source` を打つ手間を省くため、`docker-compose/entrypoint.sh` と `~/.bashrc` で
-次を自動実行するよう構成してある（実装済み）。
-
-```bash
-source /opt/ros/jazzy/setup.bash
-[ -f /workspace/ros2_ws/install/setup.bash ] && source /workspace/ros2_ws/install/setup.bash
-```
-
-> **`source` 忘れは ROS 2 最頻出のトラブル**である（「ノードが見つからない」の第一容疑）。
-> 自動化しておくことを強く勧める。
-
-作業を短縮するため、`scripts/` に薄いラッパを置く。
-
-> **⚠️ `scripts/*.sh` はホスト（Mac）側で実行する。**
-> 中身が `docker compose` コマンドであり、コンテナ内には docker CLI が無いため、
-> コンテナの中では動かない（誤実行した場合は案内を出して停止する）。
-> コンテナ内での作業は `ros2` / `colcon` コマンドを直接使う。
-
-```bash
-./scripts/up.sh          # コンテナ起動（ポート確認・初回ビルド込み）
-./scripts/sh.sh          # コンテナ内 bash に入る
-./scripts/build.sh       # コンテナ内で colcon build（引数でパッケージ指定可）
-./scripts/down.sh        # 停止
-./scripts/verify_env.sh  # 動作確認の一括実行（4 章の C1〜C5）
-```
-
----
-
-## 4. STEP 2: 動作確認
-
-**この章を全部通ることが、学習開始の合格条件**である（2.1 の C1〜C5）。
-`./scripts/verify_env.sh` で一括実行できるが、初回は手で 1 つずつ確認することを勧める。
-どこで落ちるかを知ること自体が、後のトラブル対応の下地になる。
-
-### 4.1 ros2doctor による自己診断
-
-```bash
+./scripts/sh.sh        # プロンプトが root@ros2:/workspace/ros2_ws# に変わる
 ros2 doctor
 ```
 
-環境変数・RMW・ネットワーク・パッケージの整合性を自己診断する。
-`All 5 checks passed` と出れば合格。エラーが出る場合は
-[`docs/troubleshooting.md`](docs/troubleshooting.md) を参照。
+**期待される結果:** `All 5 checks passed` と出る（大量の `UserWarning` は無視してよい）。
 
-> `UserWarning: ... has been updated to a new version. local: 3.4.11 < latest: 3.4.12`
-> が大量に出るが、**無視してよい**。イメージのビルド後に ROS 2 側で小さな修正版が
-> 公開されたことを知らせているだけで、動作には影響しない。消したい場合はイメージを
-> 再ビルドする。
+ここまで来たら、[P01 の手順書](lessons/P01_observe_nodes.md) から学習を始める。
 
-```bash
-ros2 doctor --report     # 詳細レポート（問い合わせ時に添付すると有用）
-```
+### 5.4 動作確認の基準
 
-### 4.2 turtlesim（C2）
+学習を始めてよい状態の基準（詳細は [セットアップガイド 2.1](docs/setup_guide.md#21-完成状態の定義)）。
 
-ROS 2 の "Hello World"。**GUI が出るかの確認も兼ねる**ため、最初に実施する。
-
-**① ブラウザで GUI の画面を開く**
-
-Mac のブラウザで `http://localhost:6080/vnc.html` を開き、「**接続**（Connect）」を押す。
-何も起動していないデスクトップ（黒っぽい画面）が出る。
-
-**② turtlesim を起動する**（どちらもコンテナ内）
-
-```bash
-# 1枚目
-ros2 run turtlesim turtlesim_node
-
-# 2枚目（Mac で ./scripts/sh.sh してから）
-ros2 run turtlesim turtle_teleop_key
-```
-
-ブラウザの画面に青い背景と亀が表示され、矢印キーで亀が動けば合格。
-
-> ⚠️ **キー入力を受け取るのは 2 枚目のターミナル**である。ブラウザの亀の画面を
-> クリックしてからキーを押しても亀は動かない。2 枚目のターミナルをクリックしてから押す。
-
-### 4.3 ノード間通信（C3）
-
-```bash
-# 1枚目
-ros2 run demo_nodes_py talker
-
-# 2枚目
-ros2 run demo_nodes_py listener
-```
-
-`listener` 側に `I heard: [Hello World: 1]` が連続表示されれば、DDS の疎通は正常。
-
-```bash
-# 3枚目で観測してみる
-ros2 node list
-ros2 topic list
-ros2 topic echo /chatter
-ros2 topic hz /chatter
-```
-
-> ここで `talker` は動くのに `listener` が何も受け取らない場合、
-> ほぼ確実に DDS / ネットワーク設定の問題である。3.4 の方針 1・`ROS_AUTOMATIC_DISCOVERY_RANGE` を確認する。
-
-### 4.4 rqt / rqt_graph（C4）
-
-```bash
-ros2 run rqt_graph rqt_graph
-```
-
-`talker` と `listener` が `/chatter` で結ばれた図が表示されれば合格。
-**ノード構成を目で見る手段**として、学習全体で最も使うツールの 1 つ。
-
-```bash
-rqt                                  # 統合GUI
-ros2 run rqt_console rqt_console     # ログ閲覧
-```
-
-### 4.5 RViz2（C4）
-
-```bash
-rviz2
-```
-
-グリッドが表示されれば合格。この時点で表示するデータはまだ無い。
-RViz2 は S3（TF / URDF）以降で本格的に使う。
-
-### 4.6 Gazebo（C5）
-
-```bash
-# Gazebo 単体の起動
-gz sim -v 4 shapes.sdf
-```
-
-3D 画面に図形が表示され、左下の再生ボタンでシミュレーションが進めば合格。
-
-続いて **ROS 2 との橋渡し**を確認する。Gazebo のトピックは、そのままでは ROS 2 側に
-見えない。`ros_gz_bridge` で 1 つずつ橋渡しする必要がある。ここではシミュレーション時刻
-（`/clock`）を橋渡しして確かめる。
-
-```bash
-# 1枚目: Gazebo を起動（-r で再生状態から始める）
-gz sim -v 4 -r visualize_lidar.sdf
-
-# 2枚目: /clock を Gazebo → ROS 2 へ橋渡しする
-ros2 run ros_gz_bridge parameter_bridge /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock
-
-# 3枚目: ROS 2 側で受け取れるか確かめる
-ros2 topic list                 # /clock が出る
-ros2 topic echo /clock --once   # sec / nanosec が表示されれば合格
-```
-
-> 2 枚目を起動する前に `ros2 topic list` を実行すると、`/clock` は出てこない。
-> **ブリッジを起動して初めて見える**ことを確かめておくと、P19 の理解が早くなる。
-> `@` `[` の記法は「ROS 2 の型」と「Gazebo の型」と「向き（`[` は Gazebo → ROS 2）」を表す。
-
-> **⚠️ 注意:** Jazzy が対応する Gazebo は **Harmonic** であり、コマンドは `gz sim` である。
-> Web 上の記事や Humble 世代のチュートリアルには `ign gazebo` や `gazebo`（Classic）と
-> 書かれているものが多いが、**本環境では動かない**。
-> 詳細は [`docs/humble_jazzy_diff.md`](docs/humble_jazzy_diff.md) を参照。
-
-### 4.7 チェックリスト
-
-| # | 確認項目 | 判定 |
-|---|---|---|
-| 1 | `ros2 doctor` が通る | ✅ 2026-10-06 実機で確認（`All 5 checks passed`） |
-| 2 | turtlesim が表示され、キー操作で動く | 🔲 |
-| 3 | `talker` / `listener` が疎通する | 🔲 |
-| 4 | `rqt_graph` でノード構成が見える | 🔲 |
-| 5 | `rviz2` が開く | 🔲 |
-| 6 | `gz sim` が開き、ROS 側にトピックが見える | 🔲 |
+| # | 条件 | 状況 |
+|:-:|---|:-:|
+| C1 | コンテナが起動し、`ros2 doctor` が通る | ✅ 実機で確認済み |
+| C2 | turtlesim が画面に表示され、キー操作で動く | 🔲 確認中（P01） |
+| C3 | ノード間でメッセージが流れる | 🔲 |
+| C4 | RViz2 と rqt が開く | 🔲 |
+| C5 | Gazebo が起動し、ROS 側からトピックが見える | 🔲 |
+| C6 | PyCharm から `rclpy` の補完が効く | 🔲 |
 
 ---
 
-## 5. STEP 3: GUI をどう見るか
-
-**Mac + Docker における最大の設計判断がここ。**
-ROS 2 の学習は RViz2・rqt・Gazebo という GUI ツールに大きく依存するため、
-表示方式の選択が学習の快適さを左右する。
-
-### 5.1 3 方式の比較
-
-| 方式 | 仕組み | 長所 | 短所 | 用途 |
-|---|---|---|---|---|
-| **A. noVNC**<br>（推奨） | コンテナ内に仮想ディスプレイ（Xvfb）+ 軽量デスクトップを立て、ブラウザに配信 | ホスト側の準備が不要。**Gazebo GUI も RViz2 も rqt も全部映る**。安定 | 描画がやや重い。解像度固定 | **主力**。日常的にこれを使う |
-| **B. Foxglove Studio** | `foxglove_bridge` が WebSocket で ROS データを配信、ホストのアプリで可視化 | 描画が軽快で美しい。TF・点群・画像の確認に最適。X11 不要 | **Gazebo GUI は映せない**（ROS のデータ可視化専用） | RViz2 の代替として併用 |
-| **C. X11 転送（XQuartz）** | ホストの XQuartz へ X11 プロトコルを転送 | ネイティブウィンドウとして開く | Apple Silicon では描画が非常に遅く、Gazebo は実用外。設定も煩雑 | **非推奨** |
-
-### 5.2 推奨構成
-
-**A（noVNC）を主、B（Foxglove）を副**とする二本立てを推奨する。
-
-```bash
-# A: ブラウザで開いて「接続」を押す（コンテナ起動中は常時利用可）
-open http://localhost:6080/vnc.html
-
-# B: Foxglove を使う場合、コンテナ内でブリッジを起動
-ros2 launch foxglove_bridge foxglove_bridge_launch.xml
-# → ホストの Foxglove Studio から ws://localhost:8765 へ接続
-```
-
-使い分けの目安は次のとおり。
-
-| やりたいこと | 方式 |
-|---|---|
-| Gazebo でロボットを見ながら操作する | A |
-| rqt / rqt_graph でノード構成を見る | A |
-| TF ツリーやセンサデータをじっくり確認する | B |
-| 動作が重いと感じたとき | Gazebo をヘッドレス起動し、B で可視化 |
-
-### 5.3 M2 での描画性能とリアルタイムファクタ
-
-**事前に知っておくべき制約。**
-Docker コンテナから Mac の GPU は使えないため、**Gazebo の物理演算・描画は CPU 実行**になる。
-
-| 状況 | リアルタイムファクタ（目安） |
-|---|---|
-| turtlesim・基本ノード | 1.0（影響なし） |
-| Gazebo 単純ワールド（ロボット1台・LiDAR 1個） | 0.7〜1.0 |
-| Gazebo + SLAM | 0.4〜0.7 |
-| Gazebo + Nav2 + SLAM 同時 | 0.2〜0.5 |
-
-つまり**シミュレーション内の時間が実時間より遅く進む**。学習用途では問題にならないが、
-「動きがカクつく」「反応が遅い」のは**設定ミスではなく仕様**である。
-気になる場合の対策は次の 3 つ。
-
-1. Gazebo をヘッドレス起動する（`gui:=false`）→ 描画分の CPU が浮く
-2. 可視化を Foxglove（方式 B）に寄せる
-3. Docker Desktop の割り当て CPU コア数を増やす
-
----
-
-## 6. STEP 4: 開発環境の整備（PyCharm Professional）
-
-コンテナ内の Python でコードを書く以上、**IDE がコンテナ内の `rclpy` を認識しないと
-補完もエラー検出も効かない**。ここを設定するかどうかで学習効率が大きく変わる。
-
-> Community 版には Docker インタプリタ機能が無いため、本章は Professional 前提である。
-
-### 6.1 Docker インタプリタの設定
-
-1. `Settings` → `Project: sim_ros2_v1` → `Python Interpreter`
-2. `Add Interpreter` → `On Docker Compose...`
-3. 設定内容
-
-| 項目 | 値 |
-|---|---|
-| Configuration files | `docker-compose/docker-compose.yml` |
-| Service | `ros2` |
-| Python interpreter path | `/usr/bin/python3` |
-
-4. インデックス作成が完了するまで待つ（初回は数分）
-
-> **`.idea/`（PyCharm の設定）は Git の管理対象外にしている。** PyCharm は開いている間
-> `.idea/` を書き換え続ける（例: モジュール名を `pyproject.toml` の `sim-ros2-v1` に揃えて
-> `.iml` をリネームする）。管理対象にしていると、それが未コミットの変更になって
-> `git pull` が止まる。インタプリタなどの設定は各自の PyCharm で行う。
-
-### 6.2 rclpy の補完を効かせる
-
-ROS 2 の Python パッケージは、標準の site-packages ではなく
-**ROS 独自のパス**に配置されているため、インタプリタ設定だけでは補完が効かない。
-
-`Python Interpreter` → 歯車 → `Show All` → 対象を選択 → `Show Interpreter Paths` で、
-次のパスを追加する。
-
-```
-/opt/ros/jazzy/lib/python3.12/site-packages
-/opt/ros/jazzy/local/lib/python3.12/dist-packages
-/workspace/ros2_ws/install/<パッケージ名>/lib/python3.12/site-packages
-```
-
-3 行目は**自作パッケージのビルド後**に追加する。
-カスタムメッセージ（`.msg`）を定義した際、その Python 型を補完させるために必要になる。
-
-> ここを設定しないと、`from rclpy.node import Node` が赤線になり、
-> `create_publisher` などの引数も補完されない。**設定する価値は大きい。**
-
-### 6.3 コンテナ内ノードのデバッグ
-
-方法は 2 通り。用途が異なる。
-
-**方法 1: PyCharm の Run/Debug 構成から直接起動する（単体ノードのデバッグ）**
-
-Docker インタプリタを設定済みであれば、通常の Python スクリプトと同様に
-ブレークポイントを置いて実行できる。環境変数に `ROS_DOMAIN_ID` などを設定しておく。
-単体のノードを検証する場合はこれが最も手軽。
-
-**方法 2: `debugpy` でリモートアタッチする（launch 起動中のノードのデバッグ）**
-
-`ros2 launch` で起動されたノードには方法 1 では入り込めない。
-デバッグしたいノードの先頭に次を仕込み、PyCharm の
-`Python Debug Server` 構成（ポート 5678）からアタッチする。
-
-```python
-import debugpy
-debugpy.listen(("0.0.0.0", 5678))
-debugpy.wait_for_client()
-```
-
-ポート 5678 は `docker-compose.yml` で公開済み（この Mac からのみ接続できる）。
-
-### 6.4 ワークスペースのマウント方針
-
-| パス | 扱い | 理由 |
-|---|---|---|
-| `ros2_ws/src/` | **ホストからマウント** | PyCharm で編集し、Git 管理する対象 |
-| `ros2_ws/build/`, `install/`, `log/` | 名前付きボリューム | ホスト共有だとビルドが遅く、権限問題も起きる |
-| `tools/`, `docs/`, `scripts/` | ホストからマウント | ホスト側でも実行・編集する |
-
-また、`colcon build --symlink-install` を常用する。
-Python パッケージの場合、**ソースを編集しても再ビルド不要**になり、
-編集 → 実行のループが大幅に短くなる。
-
----
-
-## 7. STEP 5: ワークスペースの初期化
-
-### 7.1 colcon ワークスペースの作成
-
-ROS 2 では、パッケージ群を置く場所を「ワークスペース」と呼ぶ。
-構造は決まっており、`src/` に自作パッケージを並べ、`colcon build` すると
-`build/` `install/` `log/` が自動生成される。
-
-```bash
-# コンテナ内
-mkdir -p /workspace/ros2_ws/src
-cd /workspace/ros2_ws
-colcon build          # src が空でも成功する（ディレクトリ生成の確認）
-source install/setup.bash
-```
-
-### 7.2 最初のパッケージ雛形
-
-```bash
-cd /workspace/ros2_ws/src
-ros2 pkg create --build-type ament_python --license Apache-2.0 \
-    --dependencies rclpy std_msgs \
-    sim_first
-```
-
-生成される構造は次のとおり。
-
-```
-sim_first/
-├── package.xml          # パッケージのメタ情報と依存関係
-├── setup.py             # エントリポイント（実行ファイル名）の定義
-├── setup.cfg
-├── resource/sim_first
-├── sim_first/           # ここに .py を置く
-│   └── __init__.py
-└── test/                # ament_lint の既定テスト
-```
-
-> **`--build-type ament_python` を必ず指定する。** 省略すると `ament_cmake`（C++ 用）になる。
-> 本プロジェクトは Python のみを扱うため、常に `ament_python` である。
-
-### 7.3 ビルドと source の作法
-
-```bash
-cd /workspace/ros2_ws
-
-colcon build --symlink-install                    # 全体ビルド
-colcon build --packages-select sim_first          # 特定パッケージのみ
-colcon build --packages-up-to sim_bringup         # 依存を辿ってビルド
-
-source install/setup.bash                         # ★ ビルド後は必ず実行
-```
-
-**押さえるべき 3 つの作法**
-
-1. **ビルドは必ずワークスペース直下（`ros2_ws/`）で実行する。** `src/` の中では失敗する
-2. **ビルド後は `source install/setup.bash`。** 新しいターミナルでも毎回必要（自動化推奨・3.6 参照）
-3. **`.msg` / `.srv` を変更したら、それを使う側のパッケージも再ビルドする。**
-   古い型が残って原因不明のエラーになる場合は `rm -rf build install log` してフルビルド
-
-### 7.4 .gitignore
-
-ビルド成果物や個人の設定は Git 管理しない。リポジトリの `.gitignore` に**設定済み**である。
-
-| 対象 | 除外する理由 |
-|---|---|
-| `ros2_ws/build/` `install/` `log/` | `colcon build` の成果物。いつでも作り直せる |
-| `.gz/` `*.sdf.bak` | Gazebo の作業ファイル |
-| `bags/` | rosbag の記録。容量が大きい |
-| `.idea/` | PyCharm の個人設定。書き換えられ続けるため（6.1 の注記） |
-| `.env` | 各自のポート番号などの設定 |
-| `.venv/` | ホスト側の Python 仮想環境 |
-
----
-
-## 8. リポジトリ構成
-
-### 8.1 ディレクトリ一覧
+## 6. リポジトリ構成
 
 ```
 sim_ros2_v1/
-├── docker-compose/          # 【STEP 1】実行環境
-│   ├── Dockerfile           #   ROS 2 Jazzy + Gazebo Harmonic + Nav2 + GUI
-│   ├── docker-compose.yml   #   ボリューム・ポート・環境変数
-│   └── entrypoint.sh        #   GUI 起動と source の自動化
-├── ros2_ws/                 # 【STEP 5】ROS 2 ワークスペース
-│   └── src/                 #   自作パッケージ（学習の主戦場・現在は空）
-├── scripts/                 # 【STEP 2】定型操作
-│   ├── up.sh / sh.sh        #   起動 / コンテナに入る
-│   ├── build.sh / down.sh   #   ビルド / 停止
-│   └── verify_env.sh        #   動作確認の一括実行（C1〜C5）
-├── lessons/                 # 演習の手順書（コマンド・期待される結果）※P01 から順に作成中
-├── tools/                   # ROS 非依存の Python ツール（rosbag 解析など）※未作成
-├── tests/                   # tools/ の pytest（ROS 不要・ホストで実行）※未作成
-├── docs/                    # 設計・学習計画・トラブルシュート
-├── .env.example             # 環境変数のひな形（cp して .env にする）
-├── pyproject.toml           # ホスト側ツールの依存定義
-└── README.md                # 本ドキュメント（学習準備）
+├── README.md                # プロジェクトの全体像（本書）
+├── docs/                    # 計画・環境・リファレンス
+│   ├── setup_guide.md       #   環境構築の手順（STEP 1〜5）
+│   ├── learning_plan.md     #   学習計画（技術の評価・演習 28 本の詳細）
+│   ├── ros2_tutorial_index.md  # 公式チュートリアルの索引
+│   ├── ros2_essentials.md   #   ROS 2 の要点
+│   ├── dev_workflow.md      #   日常の開発ワークフロー
+│   ├── troubleshooting.md   #   トラブルシューティング
+│   └── humble_jazzy_diff.md #   Humble ↔ Jazzy 差分
+├── lessons/                 # 演習の手順書（コマンドと期待される結果）
+├── docker-compose/          # 実行環境（Dockerfile / compose / entrypoint）
+├── scripts/                 # Mac 側で使う定型操作（up / sh / build / down / verify_env）
+├── ros2_ws/src/             # 自作の ROS 2 パッケージ（演習で増えていく。現在は空）
+├── tools/                   # ROS に依存しない解析ツール（P27 で作成）※未作成
+├── tests/                   # tools/ のテスト ※未作成
+├── .env.example             # ポート番号などの設定のひな形
+└── pyproject.toml           # ホスト側 Python ツールの依存定義
 ```
-
-### 8.2 責務とディレクトリの対応
-
-| ディレクトリ | 責務 | 実行場所 |
-|---|---|---|
-| `docker-compose/` | 環境の再現性を担保する | ホスト |
-| `ros2_ws/src/` | ROS 2 のノード・インターフェース・launch・URDF | コンテナ内 |
-| `lessons/` | 学習教材。実装は `ros2_ws/src/` にあり、教材からリンクする | — |
-| `tools/` | rosbag 解析・軌跡計算・レポート生成 | ホスト |
-| `scripts/` | 定型操作の短縮 | ホスト |
-| `tests/` | `tools/` の単体テスト | ホスト |
-| `docs/` | 設計と計画のドキュメント | — |
-
-### 8.3 ROS 依存 / 非依存の分離方針
-
-**本リポジトリの設計上、最も重要な方針。**
-
-```mermaid
-flowchart LR
-    subgraph Container["コンテナ内（ROS 依存）"]
-        Nodes["ros2_ws/src/ - ノード・launch・URDF"]
-        Bag["rosbag2 ファイル"]
-    end
-    subgraph Host["ホスト（ROS 非依存）"]
-        Tools["tools/ - 解析・可視化"]
-        Tests["tests/ - pytest"]
-    end
-    Nodes --> Bag
-    Bag --> Tools
-    Tools --> Tests
-classDef default fill:#000,stroke:#fff,color:#fff
-classDef subgraphStyle fill:#1a1a1a,stroke:#fff,color:#fff
-class Nodes,Bag,Tools,Tests default
-style Container fill:#1a1a1a,stroke:#fff,color:#fff
-style Host fill:#1a1a1a,stroke:#fff,color:#fff
-```
-
-**「ROS に依存する処理」と「純粋な計算・解析」を分ける。**
-
-| 層 | 内容 | `rclpy` の import | テスト |
-|---|---|---|---|
-| ROS 層（`ros2_ws/src/`） | ノード、トピック購読、TF、launch | する | `colcon test`（コンテナ内） |
-| ロジック層（`tools/`） | 軌跡計算、統計、CSV/グラフ出力 | **しない** | `pytest`（ホスト・高速） |
-
-この分離により、ロジック部分は**コンテナを起動せずにホストでテストできる**。
-FastAPI におけるルーター層とサービス層の分離と同じ考え方であり、
-CI も ROS 環境なしで回せるようになる。
 
 ---
 
-## 9. 関連ドキュメント・参考リンク
+## 7. 現在の状況
 
-### 9.1 本リポジトリのドキュメント
+| 項目 | 状況 |
+|---|---|
+| 環境構築（STEP 1〜5） | 手順とファイルは完成。実機（macOS Apple Silicon）でビルド・起動・`ros2 doctor` まで確認済み |
+| GUI 表示 | 画面を出す仕組み（Xvfb・x11vnc・noVNC）の起動は実機で確認済み。turtlesim の表示は確認中 |
+| 学習計画 | 全 28 演習の一覧と詳細が完成（[docs/learning_plan.md](docs/learning_plan.md)） |
+| 手順書 | P01 のみ作成済み（[lessons/](lessons/README.md)） |
+| 自作パッケージ | 未着手（P05 から作り始める） |
+| 環境への追加が必要なもの | P22 の `cv_bridge`、P23 の ros2_control 一式（[学習計画 7 章](docs/learning_plan.md#7-学習環境への追加が必要なもの)） |
 
-本リポジトリのドキュメントの一覧と読む順番は、冒頭の「[📚 ドキュメント案内](#-ドキュメント案内)」にまとめている。
+---
 
-### 9.2 外部リンク
+## 8. 参考リンク
 
 | リンク | 内容 |
 |---|---|
 | [ROS 2 Jazzy Documentation](https://docs.ros.org/en/jazzy/) | 公式ドキュメント（本プロジェクトの対象バージョン） |
-| [ROS 2 Tutorials](https://docs.ros.org/en/jazzy/Tutorials.html) | 公式チュートリアル索引 |
-| [ROS 2 Concepts](https://docs.ros.org/en/jazzy/Concepts.html) | 概念の解説 |
-| [Gazebo Harmonic](https://gazebosim.org/docs/harmonic) | シミュレータ公式 |
-| [ros_gz](https://github.com/gazebosim/ros_gz) | ROS 2 と Gazebo のブリッジ |
-| [Nav2](https://docs.nav2.org/) | 自律走行フレームワーク |
-| [Foxglove](https://foxglove.dev/) | 可視化ツール |
-| [REP-2000](https://ros.org/reps/rep-2000.html) | ディストリごとの対応バージョン定義 |
+| [ROS 2 Tutorials](https://docs.ros.org/en/jazzy/Tutorials.html) | 公式チュートリアル |
+| [Gazebo Harmonic](https://gazebosim.org/docs/harmonic) | シミュレータ |
+| [ros_gz](https://github.com/gazebosim/ros_gz) | ROS 2 と Gazebo の橋渡し |
+| [Nav2](https://docs.nav2.org/) | 自律移動のフレームワーク |
+| [ros2_control](https://control.ros.org/jazzy/) | 制御のフレームワーク |
+| [REP-2000](https://ros.org/reps/rep-2000.html) | ROS 2 の版ごとの対応バージョン |
 
 ---
 
-## 10. 変更履歴
+## 9. 変更履歴
 
 | 日付 | 内容 |
 |---|---|
-| 2026-08-04 | 初版。学習準備（STEP 1〜5）のセットアップガイドとして作成。学習計画以降は `docs/` へ分離 |
-| 2026-08-04 | STEP 1〜2 を実装（`docker-compose/` `scripts/` `.env.example`）。パスを `docker-compose/docker-compose.yml` に統一。`ROS_LOCALHOST_ONLY` を Jazzy 後継の `ROS_AUTOMATIC_DISCOVERY_RANGE` に修正 |
-| 2026-08-05 | イメージのビルドとコンテナ起動を実機確認。`scripts/*.sh` をコンテナ内で誤実行した際のガードを追加 |
-| 2026-10-04 | 学習計画（`docs/learning_plan.md`）を全面改訂。技術評価から組み直した演習 28 本の構成に変更 |
-| 2026-10-05 | 起動時のポート衝突（5900）を修正。公開ポートを 127.0.0.1 限定・必要最小限に変更。`up.sh` にポートの事前確認と初回ビルドを追加 |
-| 2026-10-05 | `.idea/`（PyCharm の設定）を Git の管理対象外にした。PyCharm が書き換え続けるため、GitHub と同じ状態に揃えられなかった |
-| 2026-10-05 | `up.sh` がポートの空いている正常な状況で何も表示せずに終了し、コンテナを起動していなかった不具合を修正。`sh.sh` はコンテナ停止中に案内を出すようにした |
-| 2026-10-06 | 実装に合わせて全体を見直し。起動・接続を `up.sh` / `sh.sh` 中心の手順に変更、Mac とコンテナのプロンプトの見分け方を追加、4.6 の Gazebo 橋渡し手順の誤り（ブリッジを起動していなかった）を修正、noVNC の URL を `/vnc.html` に修正、`ros2 doctor` の実機確認結果を反映 |
-| 2026-10-08 | 演習の手順書 `lessons/` を新設し、P01 の手順書を追加 |
-| 2026-10-08 | 冒頭に「ドキュメント案内」を追加（docs/ と lessons/ の全ドキュメントの概要・読む順番・いつ読むか）。9.1 は冒頭へ誘導する形に変更 |
-| 2026-10-08 | ドキュメント案内のリンクを、どの Markdown ビューアでも確実にリンクになる素の書き方に変更。表の外にリンクの箇条書きを追加し、README.md 自身へのリンクも追加 |
+| 2026-08-04 | 初版（学習準備のセットアップガイドとして作成） |
+| 2026-10-04 | 学習計画を全面改訂（演習 28 本の構成） |
+| 2026-10-05 〜 06 | 起動時の不具合修正（ポート衝突・`up.sh`）、`.idea/` の管理対象外化、実機確認結果の反映 |
+| 2026-10-08 | 演習の手順書 `lessons/` を新設（P01） |
+| 2026-10-08 | **README をプロジェクト全体の入口として一から作り直した。** 目的・学習方針・目標と成果（ステージごとの到達目標と成果物）・学習の目次（全 28 演習）・実施手順・環境の要点・現在の状況をまとめた。それまでの環境構築の詳細（STEP 1〜5）は [docs/setup_guide.md](docs/setup_guide.md) に移した。変更の経緯の詳細は同書の変更履歴にある |

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# 学習準備の動作確認（README STEP 2 / 合格条件 C1〜C5）を自動化する。
+# 学習準備の動作確認（docs/setup_guide.md STEP 2 / 合格条件 C1〜C5）を自動化する。
 #
 # 実行:
 #   ホスト側から:   ./scripts/verify_env.sh
 #   コンテナ内から: bash /workspace/scripts/verify_env.sh --in-container
 #
 # GUI を目視する項目（turtlesim の描画など）は自動判定できないため、
-# ここでは「起動できること」までを確認する。目視確認は README STEP 2 を参照。
+# ここでは「起動できること」までを確認する。目視確認は docs/setup_guide.md STEP 2 を参照。
 set -uo pipefail
 
 PASS=0
@@ -89,4 +89,4 @@ if [ "${FAIL}" -gt 0 ]; then
     echo "  → docs/troubleshooting.md の症状別インデックスを参照してください"
     exit 1
 fi
-echo "  → 学習準備の動作確認は完了です（README 4.7）"
+echo "  → 学習準備の動作確認は完了です（docs/setup_guide.md 4.7）"

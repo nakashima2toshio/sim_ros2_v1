@@ -7,7 +7,7 @@
 # GUI:
 #   http://localhost:${NOVNC_PORT:-6080}/vnc.html
 #
-# ⚠️ 設計方針（README 3.4 参照）
+# ⚠️ 設計方針（docs/setup_guide.md 3.4 参照）
 #   1. ROS 2 のノードは 1 コンテナ内に集約する。
 #      コンテナを分けると DDS の探索が macOS の Docker ネットワークで失敗しやすく、
 #      学習用途でノードを分散させる必然性がないため。

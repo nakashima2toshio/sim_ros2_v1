@@ -5,7 +5,7 @@
 | Version | 2.0（2026-10-04 全面改訂） |
 | 対象 | ROS 2 **Jazzy Jalisco** / Gazebo **Harmonic** |
 | 実装言語 | **Python（rclpy）のみ** |
-| 実行環境 | [README](../README.md) の Docker 環境（学習準備 STEP 1〜5 の完了が前提） |
+| 実行環境 | [セットアップガイド](setup_guide.md) の Docker 環境（学習準備 STEP 1〜5 の完了が前提） |
 | 全体量 | 6 ステージ / **演習プログラム 28 本** ＋ 発展課題 4 本 |
 | 目安時間 | 合計 約 120 時間（週 6 時間で約 5 か月） |
 
@@ -178,7 +178,7 @@ ROS 2 Jazzy で使われる技術を分野別に洗い出し、評価した。
 | rqt（`rqt_graph` / `rqt_console`）・`ros2 doctor` | A | 高 | ★1 | 本編 | P01, P04 |
 | rosbag2（記録・再生・Python からの読み出し） | A | 中 | ★3 | 本編 | P04, P27 |
 | pytest / `launch_testing` / ament_lint | A | 中 | ★3 | 本編 | P18 |
-| Foxglove（可視化） | B | 中 | ★1 | 本編 | README STEP 3 |
+| Foxglove（可視化） | B | 中 | ★1 | 本編 | セットアップガイド STEP 3 |
 
 #### 連携・その他
 
@@ -390,7 +390,7 @@ class P06,P07,P08,P13,P10,P12,P11,P14,P15,P16,P19,P20,P21,P24,P17,P25,P26,P23 de
 | 作るもの | なし。`turtlesim_node` と `turtle_teleop_key` を起動して観察する |
 | 学ぶ技術 | `ros2 run` / `ros2 node list` / `ros2 node info` / `rqt_graph` / `ros2 doctor` |
 | 到達確認 | `rqt_graph` の図を見て、どのノードがどのトピックで繋がっているか説明できる |
-| つまずきどころ | GUI が出ない → README STEP 3（noVNC）。`source` 忘れ → troubleshooting 5.1 |
+| つまずきどころ | GUI が出ない → セットアップガイド STEP 3（noVNC）。`source` 忘れ → troubleshooting 5.1 |
 | 参考 | `turtlesim`, `demo_nodes_py`（`talker` / `listener`） |
 
 #### P02 トピックとメッセージ型の操作 ★1
@@ -439,7 +439,7 @@ class P06,P07,P08,P13,P10,P12,P11,P14,P15,P16,P19,P20,P21,P24,P17,P25,P26,P23 de
 | 学ぶ技術 | `ros2 pkg create --build-type ament_python` / `setup.py` の `entry_points` / `package.xml` / `colcon build --symlink-install` / `rosdep install` |
 | 到達確認 | `ros2 run sim_nodes_py hello_node` で自作ノードが動く |
 | つまずきどころ | `entry_points` 未登録で `No executable found` / ビルドを `src/` の中で実行してしまう |
-| 参考 | README STEP 5 |
+| 参考 | セットアップガイド STEP 5 |
 
 #### P06 パブリッシャ・サブスクライバ・タイマ ★2
 
@@ -605,7 +605,7 @@ class P06,P07,P08,P13,P10,P12,P11,P14,P15,P16,P19,P20,P21,P24,P17,P25,P26,P23 de
 
 ### S4: シミュレーションと制御
 
-ここから Gazebo を使う。M2 では CPU 実行になるため、動作が遅いのは仕様である（README 5.3）。
+ここから Gazebo を使う。M2 では CPU 実行になるため、動作が遅いのは仕様である（セットアップガイド 5.3）。
 
 #### P19 Gazebo とブリッジ ★4
 
@@ -714,7 +714,7 @@ class P06,P07,P08,P13,P10,P12,P11,P14,P15,P16,P19,P20,P21,P24,P17,P25,P26,P23 de
 | 学ぶ技術 | `rosbag2_py`（記録・読み出し） / MCAP 形式 / ホスト側は ROS 非依存の bag 読み出しライブラリ / pandas・matplotlib |
 | 到達確認 | P26 の巡回を記録し、走行軌跡のグラフと平均速度が出力される |
 | つまずきどころ | `/tf` と `/tf_static` を記録し忘れて、再生時に RViz2 で何も表示されない |
-| 参考 | 公式「Recording a bag from a node (Python)」。分離方針は [README 8.3](../README.md#83-ros-依存--非依存の分離方針) |
+| 参考 | 公式「Recording a bag from a node (Python)」。分離方針は [セットアップガイド 8.3](setup_guide.md#83-ros-依存--非依存の分離方針) |
 
 #### P28 Web 連携 ★4
 
@@ -936,7 +936,7 @@ S1 で CLI に慣れておくのはこのためである。
 次の点は本書作成時点で**実行して確かめていない**。演習の実施時に確認する。
 
 - 各演習の目安時間（経験則による見積もり）
-- M2（CPU 実行）での Gazebo + Nav2 の実用的な速度（README 5.3 の目安値も未実測）
+- M2（CPU 実行）での Gazebo + Nav2 の実用的な速度（セットアップガイド 5.3 の目安値も未実測）
 - P22・P23 で追加するパッケージが arm64 で提供されているか
 
 ---
