@@ -7,39 +7,39 @@ ROS 2 学習中に高頻度で遭遇する問題と、その切り分け手順�
 
 ## 目次
 
-1. [症状別インデックス](#1-症状別インデックス)
-2. [切り分けの基本手順](#2-切り分けの基本手順)
-3. [Mac / Apple Silicon 固有](#3-mac--apple-silicon-固有)
-4. [DDS・ネットワーク](#4-ddsネットワーク)
-5. [ビルド・インターフェース](#5-ビルドインターフェース)
-6. [Gazebo](#6-gazebo)
-7. [GUI 表示](#7-gui-表示)
+1. [症状別インデックス](#sec-1)
+2. [切り分けの基本手順](#sec-2)
+3. [Mac / Apple Silicon 固有](#sec-3)
+4. [DDS・ネットワーク](#sec-4)
+5. [ビルド・インターフェース](#sec-5)
+6. [Gazebo](#sec-6)
+7. [GUI 表示](#sec-7)
 
 ---
 
-## 1. 症状別インデックス
+## <a id="sec-1"></a>1. 症状別インデックス
 
 | 症状 | 最も可能性が高い原因 | 参照 |
 |---|---|---|
-| `Package 'xxx' not found` / ノードが見つからない | `source install/setup.bash` を忘れている | [5.1](#51-source-忘れ) |
-| トピックは `list` に出るのに `echo` で何も来ない | **QoS 不一致** | [4.1](#41-qos-不一致) |
-| `talker` は動くが `listener` が受け取らない | DDS / ネットワーク設定 | [4.2](#42-ノード同士が見えない) |
-| `.msg` を変更したのに古い型が使われる | ビルドキャッシュ | [5.2](#52-インターフェース変更が反映されない) |
-| `colcon build` が途中で固まる / OOM | 並列数過多 | [5.3](#53-ビルドが固まる--メモリ不足) |
-| Gazebo が真っ黒 / 起動しない | GPU 非対応 / GUI 設定 | [6.1](#61-gazebo-が真っ黒--起動しない) |
-| `ign gazebo: command not found` | Humble 世代の記事を見ている | [6.2](#62-ign-gazebo-が見つからない) |
-| RViz2 / rqt のウィンドウが出ない | GUI 表示方式の設定 | [7.1](#71-gui-ウィンドウが表示されない) |
-| 動きがカクつく / 反応が遅い | **仕様**（CPU 実行） | [3.2](#32-リアルタイムファクタが-10-に届かない) |
-| `Lookup would require extrapolation into the past` | TF の時刻ずれ | [4.4](#44-tf-の変換が見つからない) |
-| PyCharm で `rclpy` が赤線になる | インタプリタパス未設定 | [3.3](#33-pycharm-で-rclpy-が解決されない) |
-| `./scripts/sh.sh: No such file or directory` | コンテナ内で実行している | [5.5](#55-scripts-のスクリプトが見つからない) |
-| `zsh: command not found: ros2` | Mac（ホスト）側で実行している | [5.6](#56-ros2-コマンドが見つからない) |
-| `ports are not available` / `address already in use` | ホスト側のポートを他のアプリが使っている | [7.4](#74-起動時にポートが使えない) |
-| `pull access denied for sim_ros2_v1` | イメージ未作成のまま `up` した（実害なし） | [7.5](#75-pull-access-denied-と表示される) |
+| `Package 'xxx' not found` / ノードが見つからない | `source install/setup.bash` を忘れている | [5.1](#sec-5-1) |
+| トピックは `list` に出るのに `echo` で何も来ない | **QoS 不一致** | [4.1](#sec-4-1) |
+| `talker` は動くが `listener` が受け取らない | DDS / ネットワーク設定 | [4.2](#sec-4-2) |
+| `.msg` を変更したのに古い型が使われる | ビルドキャッシュ | [5.2](#sec-5-2) |
+| `colcon build` が途中で固まる / OOM | 並列数過多 | [5.3](#sec-5-3) |
+| Gazebo が真っ黒 / 起動しない | GPU 非対応 / GUI 設定 | [6.1](#sec-6-1) |
+| `ign gazebo: command not found` | Humble 世代の記事を見ている | [6.2](#sec-6-2) |
+| RViz2 / rqt のウィンドウが出ない | GUI 表示方式の設定 | [7.1](#sec-7-1) |
+| 動きがカクつく / 反応が遅い | **仕様**（CPU 実行） | [3.2](#sec-3-2) |
+| `Lookup would require extrapolation into the past` | TF の時刻ずれ | [4.4](#sec-4-4) |
+| PyCharm で `rclpy` が赤線になる | インタプリタパス未設定 | [3.3](#sec-3-3) |
+| `./scripts/sh.sh: No such file or directory` | コンテナ内で実行している | [5.5](#sec-5-5) |
+| `zsh: command not found: ros2` | Mac（ホスト）側で実行している | [5.6](#sec-5-6) |
+| `ports are not available` / `address already in use` | ホスト側のポートを他のアプリが使っている | [7.4](#sec-7-4) |
+| `pull access denied for sim_ros2_v1` | イメージ未作成のまま `up` した（実害なし） | [7.5](#sec-7-5) |
 
 ---
 
-## 2. 切り分けの基本手順
+## <a id="sec-2"></a>2. 切り分けの基本手順
 
 問題が起きたら、**上から順に**確認する。原因の 8 割はここで判明する。
 
@@ -70,7 +70,7 @@ ros2 topic hz <topic>
 
 ---
 
-## 3. Mac / Apple Silicon 固有
+## <a id="sec-3"></a>3. Mac / Apple Silicon 固有
 
 ### 3.1 ホストに ROS 2 を入れようとして失敗する
 
@@ -79,9 +79,9 @@ ros2 topic hz <topic>
 Apple Silicon では依存解決が非常に困難。
 
 **対処:** ホストへのインストールは試みない。すべて Docker コンテナ内で行う
-（[セットアップガイド STEP 1](setup_guide.md#3-step-1-docker-環境の構築)）。
+（[セットアップガイド STEP 1](setup_guide.md#sec-3)）。
 
-### 3.2 リアルタイムファクタが 1.0 に届かない
+### <a id="sec-3-2"></a>3.2 リアルタイムファクタが 1.0 に届かない
 
 **これは不具合ではない。** Docker コンテナから Mac の GPU は利用できないため、
 Gazebo の物理演算・描画は CPU 実行になる。
@@ -100,7 +100,7 @@ Gazebo の物理演算・描画は CPU 実行になる。
 3. Docker Desktop の割り当て CPU / メモリを増やす
 4. ワールドを単純化する（不要なモデル・光源を減らす）
 
-### 3.3 PyCharm で rclpy が解決されない
+### <a id="sec-3-3"></a>3.3 PyCharm で rclpy が解決されない
 
 Docker インタプリタを設定しても、ROS 2 の Python パッケージは
 標準の site-packages に無いため補完が効かない。
@@ -113,7 +113,7 @@ Docker インタプリタを設定しても、ROS 2 の Python パッケージ�
 /workspace/ros2_ws/install/<パッケージ名>/lib/python3.12/site-packages
 ```
 
-詳細は [セットアップガイド STEP 4](setup_guide.md#6-step-4-開発環境の整備pycharm-professional)。
+詳細は [セットアップガイド STEP 4](setup_guide.md#sec-6)。
 
 ### 3.4 コンテナのビルドが極端に遅い
 
@@ -127,9 +127,9 @@ Docker Desktop のファイル共有方式が原因のことがある。
 
 ---
 
-## 4. DDS・ネットワーク
+## <a id="sec-4"></a>4. DDS・ネットワーク
 
-### 4.1 QoS 不一致
+### <a id="sec-4-1"></a>4.1 QoS 不一致
 
 **症状:** `ros2 topic list` にトピックは出るが、`ros2 topic echo` で何も表示されない。
 エラーも出ない。
@@ -162,9 +162,9 @@ qos = QoSProfile(
 self.create_subscription(LaserScan, '/scan', self.cb, qos)
 ```
 
-詳細は [`ros2_essentials.md` 3章](ros2_essentials.md#3-qos-の考え方)。
+詳細は [`ros2_essentials.md` 3章](ros2_essentials.md#sec-3)。
 
-### 4.2 ノード同士が見えない
+### <a id="sec-4-2"></a>4.2 ノード同士が見えない
 
 **症状:** `talker` は動くが `listener` が何も受け取らない。`ros2 node list` に片方しか出ない。
 
@@ -202,7 +202,7 @@ export ROS_DOMAIN_ID=42            # 他と重複しない値に変更
 #    設定しても動くが警告が出る。上の変数に読み替えること。
 ```
 
-### 4.4 TF の変換が見つからない
+### <a id="sec-4-4"></a>4.4 TF の変換が見つからない
 
 **症状**
 
@@ -227,9 +227,9 @@ ros2 run tf2_ros tf2_echo map base_link      # 個別の変換を確認
 
 ---
 
-## 5. ビルド・インターフェース
+## <a id="sec-5"></a>5. ビルド・インターフェース
 
-### 5.1 source 忘れ
+### <a id="sec-5-1"></a>5.1 source 忘れ
 
 **症状**
 
@@ -250,7 +250,7 @@ source /workspace/ros2_ws/install/setup.bash
 
 恒久対処として `entrypoint.sh` / `~/.bashrc` に書いておく（セットアップガイド 3.6）。
 
-### 5.2 インターフェース変更が反映されない
+### <a id="sec-5-2"></a>5.2 インターフェース変更が反映されない
 
 **症状:** `.msg` / `.srv` を変更したのに、古いフィールド構成のまま動く、
 または型の不整合エラーが出る。
@@ -270,7 +270,7 @@ source install/setup.bash
 生成された Python 型は `install/<pkg>/lib/python3.12/site-packages/` に置かれる。
 PyCharm の補完も、ここを Interpreter Paths に追加しないと更新されない。
 
-### 5.3 ビルドが固まる / メモリ不足
+### <a id="sec-5-3"></a>5.3 ビルドが固まる / メモリ不足
 
 **症状:** `colcon build` が応答しなくなる、コンテナが落ちる。
 
@@ -299,7 +299,7 @@ entry_points={
 
 登録名を変更した場合は `colcon build --packages-select <pkg>` が必要。
 
-### 5.5 scripts のスクリプトが見つからない
+### <a id="sec-5-5"></a>5.5 scripts のスクリプトが見つからない
 
 **症状**
 
@@ -324,7 +324,7 @@ bash: ./scripts/sh.sh: No such file or directory
 コンテナ内では `ros2` / `colcon` コマンドを直接使う。
 `_common.sh` にガードを入れてあるため、誤実行した場合は案内を表示して停止する。
 
-### 5.6 ros2 コマンドが見つからない
+### <a id="sec-5-6"></a>5.6 ros2 コマンドが見つからない
 
 **症状**
 
@@ -353,9 +353,9 @@ ros2 doctor          # ここで初めて使える
 
 ---
 
-## 6. Gazebo
+## <a id="sec-6"></a>6. Gazebo
 
-### 6.1 Gazebo が真っ黒 / 起動しない
+### <a id="sec-6-1"></a>6.1 Gazebo が真っ黒 / 起動しない
 
 **原因:** GPU アクセラレーションが使えないこと、または GUI 転送の問題。
 
@@ -370,7 +370,7 @@ gz sim -v 4 shapes.sdf
 gz sim -v 4 -r -s shapes.sdf
 ```
 
-### 6.2 ign gazebo が見つからない
+### <a id="sec-6-2"></a>6.2 ign gazebo が見つからない
 
 **症状**
 
@@ -422,9 +422,9 @@ export GZ_SIM_RESOURCE_PATH=/workspace/ros2_ws/src/sim_gazebo/models:$GZ_SIM_RES
 
 ---
 
-## 7. GUI 表示
+## <a id="sec-7"></a>7. GUI 表示
 
-### 7.1 GUI ウィンドウが表示されない
+### <a id="sec-7-1"></a>7.1 GUI ウィンドウが表示されない
 
 **確認**
 
@@ -442,7 +442,7 @@ xeyes                  # X が生きているかの最小確認
 | X11（XQuartz） | XQuartz の「ネットワーククライアントからの接続を許可」が有効か |
 
 **推奨:** Apple Silicon では X11 転送は使わず、noVNC を主・Foxglove を副とする
-（[セットアップガイド STEP 3](setup_guide.md#5-step-3-gui-をどう見るか)）。
+（[セットアップガイド STEP 3](setup_guide.md#sec-5)）。
 
 ### 7.2 noVNC の画面が小さい / 解像度が合わない
 
@@ -461,7 +461,7 @@ Xvfb :1 -screen 0 1920x1080x24
 | トピックが実際に流れているか | `ros2 topic hz <topic>` |
 | Fixed frame が正しいか | Foxglove の 3D パネル設定で `map` や `base_link` を指定 |
 
-### 7.4 起動時にポートが使えない
+### <a id="sec-7-4"></a>7.4 起動時にポートが使えない
 
 **症状**
 
@@ -500,7 +500,7 @@ cp .env.example .env   # 初回のみ
 ./scripts/up.sh        # ブラウザは http://localhost:6081/vnc.html になる
 ```
 
-### 7.5 pull access denied と表示される
+### <a id="sec-7-5"></a>7.5 pull access denied と表示される
 
 **症状**
 
