@@ -17,20 +17,20 @@ turtlesim の Jazzy 版のソース（`ros/ros_tutorials` の `jazzy` ブラン�
 
 ## 目次
 
-0. [準備：画面とターミナルを揃える](#sec-0)
-1. [Step 1 環境を確認する](#step-1)
-2. [Step 2 GUI が映ることを確かめる](#step-2)
-3. [Step 3 turtlesim を起動する](#step-3)
-4. [Step 4 ノードを観察する](#step-4)
-5. [Step 5 繋がりを図で見る](#step-5)
-6. [Step 6 繋がりを変えてみる](#step-6)
-7. [到達確認](#check)
-8. [うまくいかないとき](#troubleshoot)
-9. [到達確認の答え](#answers)
+0. [準備：画面とターミナルを揃える](#0-準備画面とターミナルを揃える)
+1. [Step 1 環境を確認する](#step-1-環境を確認する)
+2. [Step 2 GUI が映ることを確かめる](#step-2-gui-が映ることを確かめる)
+3. [Step 3 turtlesim を起動する](#step-3-turtlesim-を起動する)
+4. [Step 4 ノードを観察する](#step-4-ノードを観察する)
+5. [Step 5 繋がりを図で見る](#step-5-繋がりを図で見る)
+6. [Step 6 繋がりを変えてみる](#step-6-繋がりを変えてみる)
+7. [到達確認](#到達確認)
+8. [うまくいかないとき](#うまくいかないとき)
+9. [到達確認の答え](#到達確認の答え)
 
 ---
 
-## <a id="sec-0"></a>0. 準備：画面とターミナルを揃える
+## 0. 準備：画面とターミナルを揃える
 
 ### 0.1 使う画面
 
@@ -61,7 +61,7 @@ root@ros2:/workspace/ros2_ws#
 
 ---
 
-## <a id="step-1"></a>Step 1 環境を確認する
+## Step 1 環境を確認する
 
 **ターミナル A** で実行する。
 
@@ -97,7 +97,7 @@ All 5 checks passed
 
 ---
 
-## <a id="step-2"></a>Step 2 GUI が映ることを確かめる
+## Step 2 GUI が映ることを確かめる
 
 turtlesim の前に、**「コンテナの中で開いたウィンドウがブラウザに映るか」だけ**を確かめる。
 ここで映らなければ、原因は turtlesim ではなく画面の仕組みかブラウザ側にある。
@@ -128,12 +128,12 @@ xeyes
 | 結果 | 意味 | 次にすること |
 |---|---|---|
 | 目玉が映った | 画面の仕組みは正常 | Step 3 へ |
-| 目玉が映らない | 画面の仕組みかブラウザ側の問題 | [8.1](#sec-8-1) |
+| 目玉が映らない | 画面の仕組みかブラウザ側の問題 | [8.1](#81-ブラウザに何も映らない) |
 | `xeyes: command not found` | プロンプトが Mac のまま | 0.2 からやり直す |
 
 ---
 
-## <a id="step-3"></a>Step 3 turtlesim を起動する
+## Step 3 turtlesim を起動する
 
 ### 3.1 turtlesim 本体（ターミナル A）
 
@@ -177,7 +177,7 @@ Use g|b|v|c|d|e|r|t keys to rotate to absolute orientations. 'f' to cancel a rot
 
 ---
 
-## <a id="step-4"></a>Step 4 ノードを観察する
+## Step 4 ノードを観察する
 
 **ターミナル C** で実行する。turtlesim と teleop は動かしたままにしておく。
 
@@ -267,7 +267,7 @@ ros2 node info /teleop_turtle
 
 ---
 
-## <a id="step-5"></a>Step 5 繋がりを図で見る
+## Step 5 繋がりを図で見る
 
 **ターミナル C** で実行する。
 
@@ -299,7 +299,7 @@ Step 4 で文字で見た繋がりが、図になっていることを確かめ�
 
 ---
 
-## <a id="step-6"></a>Step 6 繋がりを変えてみる
+## Step 6 繋がりを変えてみる
 
 ### 6.1 teleop を止める
 
@@ -377,9 +377,9 @@ WARNING: Be aware that there are nodes in the graph that share an exact name, wh
 
 ---
 
-## <a id="check"></a>到達確認
+## 到達確認
 
-次の 4 問に答えられたら P01 は完了である。答えは[最後の章](#answers)にある。
+次の 4 問に答えられたら P01 は完了である。答えは[最後の章](#到達確認の答え)にある。
 
 1. `/teleop_turtle` と `/turtlesim` は**どのトピック**で繋がっているか。どちらが送り手か。
 2. `/turtlesim` が提供している**サービスを 3 つ**挙げよ（パラメータ用のものは除く）。
@@ -388,9 +388,9 @@ WARNING: Be aware that there are nodes in the graph that share an exact name, wh
 
 ---
 
-## <a id="troubleshoot"></a>うまくいかないとき
+## うまくいかないとき
 
-### <a id="sec-8-1"></a>8.1 ブラウザに何も映らない
+### 8.1 ブラウザに何も映らない
 
 上から順に確かめる。
 
@@ -429,7 +429,7 @@ docker exec sim_ros2_v1_ros2 bash -c 'ps aux | grep -E "Xvfb|x11vnc|websockify|f
 
 ---
 
-## <a id="answers"></a>到達確認の答え
+## 到達確認の答え
 
 1. **`/turtle1/cmd_vel`** で繋がっている。送り手は **`/teleop_turtle`**（Publisher）、
    受け手は **`/turtlesim`**（Subscriber）。
