@@ -23,18 +23,18 @@
 
 ## 目次
 
-1. [全体構成](#1-全体構成)
-2. [Beginner: CLI tools](#2-beginner-cli-tools)
-3. [Beginner: Client libraries](#3-beginner-client-libraries)
-4. [Intermediate](#4-intermediate)
-5. [Advanced](#5-advanced)
-6. [Demos](#6-demos)
-7. [Miscellaneous](#7-miscellaneous)
-8. [本プロジェクトの章との対応](#8-本プロジェクトの章との対応)
+1. [全体構成](#sec-1)
+2. [Beginner: CLI tools](#sec-2)
+3. [Beginner: Client libraries](#sec-3)
+4. [Intermediate](#sec-4)
+5. [Advanced](#sec-5)
+6. [Demos](#sec-6)
+7. [Miscellaneous](#sec-7)
+8. [本プロジェクトの章との対応](#sec-8)
 
 ---
 
-## 1. 全体構成
+## <a id="sec-1"></a>1. 全体構成
 
 ```
 Tutorials
@@ -51,7 +51,7 @@ Tutorials
 
 ---
 
-## 2. Beginner: CLI tools
+## <a id="sec-2"></a>2. Beginner: CLI tools
 
 **コードを書かずに、CLI で ROS 2 の概念を理解するセクション。**
 
@@ -70,7 +70,7 @@ Tutorials
 
 ---
 
-## 3. Beginner: Client libraries
+## <a id="sec-3"></a>3. Beginner: Client libraries
 
 **実際にコードを書くセクション。C++ 版と Python 版が併記される。**
 
@@ -92,7 +92,7 @@ Tutorials
 
 ---
 
-## 4. Intermediate
+## <a id="sec-4"></a>4. Intermediate
 
 | # | タイトル | 扱い | 本プロジェクトの章 |
 |---|---|---|---|
@@ -176,7 +176,7 @@ Tutorials
 
 ---
 
-## 5. Advanced
+## <a id="sec-5"></a>5. Advanced
 
 | # | タイトル | 扱い | 本プロジェクトの章 |
 |---|---|---|---|
@@ -205,7 +205,7 @@ Tutorials
 
 ---
 
-## 6. Demos
+## <a id="sec-6"></a>6. Demos
 
 | # | タイトル | 扱い |
 |---|---|---|
@@ -221,7 +221,7 @@ Tutorials
 
 ---
 
-## 7. Miscellaneous
+## <a id="sec-7"></a>7. Miscellaneous
 
 | # | タイトル | 扱い |
 |---|---|---|
@@ -234,10 +234,10 @@ Tutorials
 
 ---
 
-## 8. 本プロジェクトの章との対応
+## <a id="sec-8"></a>8. 本プロジェクトの章との対応
 
 逆引き（本プロジェクトの演習 → 公式チュートリアル）は
-[`learning_plan.md` 8章](learning_plan.md#8-公式チュートリアルとの対応) を参照。
+[`learning_plan.md` 8章](learning_plan.md#sec-8) を参照。
 
 ### 8.1 公式チュートリアルでカバーされない範囲
 
