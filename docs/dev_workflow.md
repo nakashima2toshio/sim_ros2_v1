@@ -6,15 +6,15 @@
 
 ## 目次
 
-1. [基本ループ](#sec-1)
-2. [ターミナル構成](#sec-2)
-3. [CLI チートシート](#sec-3)
-4. [記録と再現（rosbag2）](#sec-4)
-5. [テストの実行](#sec-5)
+1. [基本ループ](#1-基本ループ)
+2. [ターミナル構成](#2-ターミナル構成)
+3. [CLI チートシート](#3-cli-チートシート)
+4. [記録と再現（rosbag2）](#4-記録と再現rosbag2)
+5. [テストの実行](#5-テストの実行)
 
 ---
 
-## <a id="sec-1"></a>1. 基本ループ
+## 1. 基本ループ
 
 ```mermaid
 flowchart LR
@@ -64,7 +64,7 @@ source install/setup.bash
 
 ---
 
-## <a id="sec-2"></a>2. ターミナル構成
+## 2. ターミナル構成
 
 ROS 2 の作業では**ターミナルを 3〜4 枚開く**のが標準。推奨の役割分担は次のとおり。
 
@@ -93,7 +93,7 @@ docker compose -f docker-compose/docker-compose.yml exec ros2 bash
 
 ---
 
-## <a id="sec-3"></a>3. CLI チートシート
+## 3. CLI チートシート
 
 ### 3.1 ノード
 
@@ -199,7 +199,7 @@ rm -rf build install log && colcon build          # フルビルド（型の不�
 
 ---
 
-## <a id="sec-4"></a>4. 記録と再現（rosbag2）
+## 4. 記録と再現（rosbag2）
 
 ### 4.1 記録
 
@@ -237,11 +237,11 @@ ros2 bag play bags/run01 -l        # ループ再生
 uv run python -m tools.report --bag bags/run01 --out reports/run01
 ```
 
-この分離の理由は [セットアップガイド 8.3](setup_guide.md#sec-8-3) を参照。
+この分離の理由は [セットアップガイド 8.3](setup_guide.md#83-ros-依存--非依存の分離方針) を参照。
 
 ---
 
-## <a id="sec-5"></a>5. テストの実行
+## 5. テストの実行
 
 ### 5.1 ホスト側（ROS 非依存・高速）
 
